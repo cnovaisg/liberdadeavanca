@@ -1,7 +1,11 @@
-import Image from "next/image";
 
 export default function Home() {
   return (
-    <div className="">Liberdade Abança</div>
+    <>
+        <div className="">Liberdade Abança</div>
+        <div>Post-deployment update: CHECK</div>
+
+    </>
+
   );
 }
