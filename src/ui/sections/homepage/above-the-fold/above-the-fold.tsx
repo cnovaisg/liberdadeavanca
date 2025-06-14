@@ -1,6 +1,6 @@
 const ABoveTheFoldSection = () => {
   return (
-    <div className="w-screen h-screen bg-green-500 text-slate-900 flex flex-col justify-center ">
+    <div className="w-screen h-screen bg-green-300 text-slate-900 flex flex-col justify-center ">
       <div className="flex w-full justify-center font-anton items-baseline space-x-1.5">
         <span className="text-2xl">MOVIMENTO</span>
         <div className="flex flex-col">
