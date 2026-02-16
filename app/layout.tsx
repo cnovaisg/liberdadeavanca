@@ -2,6 +2,9 @@ import type { Metadata } from "next";
 import { Geist } from "next/font/google";
 import { Anton } from "next/font/google";
 import "./globals.css";
+import Footer from "@/src/_shared/ui/sections/footer/footer";
+import MainLayout from "@/src/_shared/ui/layouts/main-layout";
+import { Main } from "next/document";
 
 const geist = Geist({
   variable: "--font-geist",
@@ -28,7 +31,10 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={`${geist.variable} ${anton.variable}`}>{children}</body>
+      <body className={`${geist.variable} ${anton.variable}`}>
+        <MainLayout>
+          {children}</MainLayout>
+      </body>
     </html>
   );
 }
