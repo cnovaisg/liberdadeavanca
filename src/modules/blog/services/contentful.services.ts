@@ -41,16 +41,16 @@ class ContentfulServices {
 
   private resolveAuthors(entry: any) {
     const entries = entry.includes?.Entry || [];
-
     if (!entry.fields?.authors) return [];
 
-    return entry.fields.authors.map((authorLink: any) => {
+    const resolvedAuthors = entry.fields.authors.map((authorLink: any) => {
       if (authorLink.sys?.type === "Link" && authorLink.sys.linkType === "Entry") {
         const authorEntry = entries.find((entry: any) => entry.sys.id === authorLink.sys.id);
         return authorEntry?.fields ?? null;
       }
       return null;
     });
+    return resolvedAuthors
   }
 
   async getManifesto() {
@@ -67,15 +67,25 @@ class ContentfulServices {
   }
 
 
-  async getLatestBlogPosts(numberOfPosts: number = 3) {
-    const data = await this.fetchEntries({
-      content_type: "blogPost",
-      order: "-sys.createdAt",
-      limit: numberOfPosts.toString(),
-    });
+ async getLatestBlogPosts(numberOfPosts: number = 3) {
+  const data = await this.fetchEntries({
+    content_type: "blogPost",
+    order: "-sys.createdAt",
+    limit: numberOfPosts.toString(),
+    include: "1",   
+    locale: "en-US",
+  });
 
-    return data.items ?? null;
-  }
+  const posts = data.items ?? [];
+  const postprocessedPosts = posts.map((post: any) => {
+    if (post.fields?.authors) {
+      post.fields.authors = this.resolveAuthors({ ...data, fields: post.fields });
+    }
+    return post;
+  });
+  return postprocessedPosts
+}
+
 
   async getPostById(id: string) {
     const url = `${this.compositeBaseUrl}/entries/${id}`;
