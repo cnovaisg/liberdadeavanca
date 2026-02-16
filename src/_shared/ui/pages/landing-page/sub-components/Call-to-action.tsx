@@ -8,7 +8,7 @@ const CallToAction = () => {
                 href="/manifesto"
                 className="text-emerald-900 italic"
             >
-                Ver Manifesto
+                Ver Manifesto ➔
             </Link>
         </div>
 
