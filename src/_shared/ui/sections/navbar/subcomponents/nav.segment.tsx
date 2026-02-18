@@ -13,7 +13,7 @@ const NavSegment = () => {
     const path = usePathname()
 
     return (
-        <nav className="flex space-x-4 text-xs font-anton">
+        <nav className="flex space-x-4 text-sm font-anton">
             {NavbarEntries.map((entry, index) => {
                 const isCurrentPath = path === entry.href
                 return (

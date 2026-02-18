@@ -1,4 +1,4 @@
-class ContentfulServices {
+class BlogService {
   private compositeBaseUrl: string;
   private headers: HeadersInit;
 
@@ -113,6 +113,6 @@ class ContentfulServices {
   }
 }
 
-const contentfulServices = new ContentfulServices();
-export default contentfulServices;
+const blogService = new BlogService();
+export default blogService;
 

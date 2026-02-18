@@ -1,5 +1,5 @@
-import Footer from "@/src/_shared/ui/sections/footer/footer";
-import Navbar from "../sections/navbar/navbar";
+import Footer from "@/src/_shared/ui/sections/footer/footer.section";
+import Navbar from "../sections/navbar/navbar.section";
 
 
 export default function MainLayout({
@@ -9,7 +9,7 @@ export default function MainLayout({
 }) {
     return (
         <div className="flex flex-col">
-            <div className="w-screen h-screen min-w-screen min-h-screen flex flex-col p-4 border-b-1 border-neutral-300 overflow-clip">
+            <div className="w-full min-w-full h-dvh min-h-dvh flex flex-col ps-4 py-4 border border-zinc-100 overflow-hidden">
                 <Navbar />
                 {children}
             </div>
