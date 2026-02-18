@@ -89,15 +89,16 @@ class ManifestoService {
             .map((node) => node.value)
             .join("")
             .split(/\n+/)
-            .map((paragraph) => paragraph.trim().replace(/\\"/g, '"'))
+            .map((paragraph) => paragraph.trim())
             .filter(Boolean)
-            .map((p) => ({ paragraph: p }))
+            .map((currentParagraph) => ({ paragraph: currentParagraph }))
         )
         .flat() || []
 
-    const authors = this.resolveAuthors(manifesto)
-    return { createdAt, updatedAt, revision, title, subtitle, value, authors }
-  }
+
+        const authors = this.resolveAuthors(manifesto)
+        return { createdAt, updatedAt, revision, title, subtitle, value, authors }
+      }
 
   async getManifesto(): Promise<PrunedManifestoEntryType | null> {
     const url = `${this.baseUrl}/entries?content_type=manifesto&limit=1&include=2`
