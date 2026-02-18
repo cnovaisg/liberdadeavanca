@@ -1,7 +1,7 @@
-import contentfulServices from "@/src/modules/blog/services/contentful.services"
+import blogService from "@/src/features/blog/services/blog.service"
 
 const Blog = async () => {
-    const blogs = await contentfulServices.getLatestBlogPosts()
+    const blogs = await blogService.getLatestBlogPosts()
     return (
         <div className="flex w-full h-full shrink-0 overflow-y-auto">
             <pre className="whitespace-pre-wrap break-words">

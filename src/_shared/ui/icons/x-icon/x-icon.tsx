@@ -1,4 +1,4 @@
-import { BasicComponentProps } from "@/src/_shared/types/types";
+import { BasicComponentProps } from "@/src/_shared/ui/icons/_shared/types";
 const XIcon = ({ scale = 1, color = "currentColor" }: BasicComponentProps) => {
     return (
         <svg
