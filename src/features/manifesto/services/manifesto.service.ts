@@ -106,10 +106,10 @@ class ManifestoService {
     if (!response.ok) throw new Error(`Contentful API error: ${response.status} ${response.statusText}`)
     const data = await response.json()
 
-    const manifestoItem = data.items?.[0]
-    if (!manifestoItem) return null
+    const manifesto = data.items?.[0]
+    if (!manifesto) return null
 
-    const prunedMAnifesto = this.pruneManifesto({ ...manifestoItem, includes: data.includes })
+    const prunedMAnifesto = this.pruneManifesto({ ...manifesto, includes: data.includes })
     return prunedMAnifesto
   }
 }
