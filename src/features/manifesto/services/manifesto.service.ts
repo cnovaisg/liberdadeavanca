@@ -1,33 +1,16 @@
-// manifesto.service.ts
-
 export type ManifestoEntryType = {
-  metadata: { tags: unknown[]; concepts: unknown[] }
   sys: {
     id: string
     createdAt: string
     updatedAt: string
-    locale: string
-    publishedVersion: number
     revision: number
-    contentType: { sys: { type: "Link"; linkType: "ContentType"; id: "manifesto" } }
   }
   fields: {
     title: string
     subtitle?: string
-    version?: number
-    date?: string
     manifestoContent: {
-      nodeType: "document"
-      data: Record<string, unknown>
       content: Array<{
-        nodeType: "paragraph"
-        data: Record<string, unknown>
-        content: Array<{
-          nodeType: "text"
-          value: string
-          marks: Array<{ type: string }>
-          data: Record<string, unknown>
-        }>
+        content: Array<{ value: string }>
       }>
     }
     authors?: Array<
@@ -70,72 +53,60 @@ class ManifestoService {
     this.headers = { Authorization: `Bearer ${TOKEN}`, "Content-Type": "application/json" }
   }
 
-  private async fetchEntries(params: Record<string, string>) {
-    const url = new URL(`${this.baseUrl}/entries`)
-    Object.entries({ include: "2", ...params }).forEach(([key, value]) =>
-      url.searchParams.append(key, value)
-    )
-
-    const response = await fetch(url.toString(), {
-      headers: this.headers,
-      next: { revalidate: 0 },
-    })
-
-    if (!response.ok) {
-      throw new Error(`Contentful API error: ${response.status} ${response.statusText}`)
-    }
-
-    return response.json()
-  }
-
   private resolveAuthors(entry: ManifestoEntryType) {
-    const entries = entry.includes?.Entry ?? []
+    const linkedEntries = entry.includes?.Entry ?? []
     if (!entry.fields?.authors) return []
 
-    const resolved = entry.fields.authors
+    const authors = entry.fields.authors
       .map((author) => {
         if ("sys" in author && author.sys?.type === "Link" && author.sys.linkType === "Entry") {
-          const authorEntry = entries.find((e) => e.sys.id === author.sys.id)
-          return authorEntry?.fields ?? null
+          const linked = linkedEntries.find((e) => e.sys.id === author.sys.id)
+          return linked?.fields ?? null
         }
         if ("name" in author && "role" in author && "imageUrl" in author) return author
         return null
       })
       .filter(Boolean) as Array<{ name: string; role: string; imageUrl: string }>
 
-    return resolved
+    return authors
   }
 
-  private pruneManifesto(manifesto: ManifestoEntryType | null): PrunedManifestoEntryType | null {
+  private pruneManifesto(
+    manifesto: ManifestoEntryType | null
+  ) {
     if (!manifesto) return null
 
     const { createdAt, updatedAt, revision } = manifesto.sys
     const { title, subtitle } = manifesto.fields
 
-  const value: Array<{ paragraph: string }> =
-  manifesto.fields.manifestoContent?.content
-    ?.map(paragraph =>
-      paragraph.content
-        .map(node => node.value)
-        .join("")
-        .split(/\n+/)
-        .map(p => p.trim().replace(/\\"/g, '"'))
-        .filter(Boolean)
-        .map(p => ({ paragraph: p }))
-    )
-    .flat() || []
-
-
+    const value =
+      manifesto.fields.manifestoContent?.content
+        ?.map((paragraph) =>
+          paragraph.content
+            .map((node) => node.value)
+            .join("")
+            .split(/\n+/)
+            .map((paragraph) => paragraph.trim().replace(/\\"/g, '"'))
+            .filter(Boolean)
+            .map((p) => ({ paragraph: p }))
+        )
+        .flat() || []
 
     const authors = this.resolveAuthors(manifesto)
-
     return { createdAt, updatedAt, revision, title, subtitle, value, authors }
   }
 
   async getManifesto(): Promise<PrunedManifestoEntryType | null> {
-    const data = await this.fetchEntries({ content_type: "manifesto", limit: "1" })
-    const manifestoItem = data.items?.[0] ?? null
-    return this.pruneManifesto({ ...data, ...manifestoItem })
+    const url = `${this.baseUrl}/entries?content_type=manifesto&limit=1&include=2`
+    const response = await fetch(url, { headers: this.headers, next: { revalidate: 0 } })
+    if (!response.ok) throw new Error(`Contentful API error: ${response.status} ${response.statusText}`)
+    const data = await response.json()
+
+    const manifestoItem = data.items?.[0]
+    if (!manifestoItem) return null
+
+    const prunedMAnifesto = this.pruneManifesto({ ...manifestoItem, includes: data.includes })
+    return prunedMAnifesto
   }
 }
 
