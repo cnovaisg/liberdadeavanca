@@ -36,6 +36,9 @@ export type PrunedManifestoEntryType = {
   authors: Array<{ name: string; role: string; imageUrl: string }>
 }
 
+const THIRTY_DAYS = 60 * 60 * 24 * 30
+const MANIFESTO_TTL = THIRTY_DAYS
+
 class ManifestoService {
   private baseUrl: string
   private headers: HeadersInit
@@ -98,7 +101,7 @@ class ManifestoService {
 
   async getManifesto(): Promise<PrunedManifestoEntryType | null> {
     const url = `${this.baseUrl}/entries?content_type=manifesto&limit=1&include=2`
-    const response = await fetch(url, { headers: this.headers, next: { revalidate: 0 } })
+    const response = await fetch(url, { headers: this.headers, next: { revalidate: MANIFESTO_TTL } })
     if (!response.ok) throw new Error(`Contentful API error: ${response.status} ${response.statusText}`)
     const data = await response.json()
 
