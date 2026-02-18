@@ -1,5 +1,5 @@
-import NavSegment from "./sub-components/nav-segment"
-import SocialMediaSegment from "./sub-components/social-media-segment"
+import NavSegment from "./subcomponents/nav.segment"
+import SocialMediaSegment from "./subcomponents/social-media.segment"
 
 const Navbar = () => {
     return (
