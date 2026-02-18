@@ -7,7 +7,7 @@ const Banner = () => {
                 <div className="text-2xl tracking-wide text-emerald-700">
                     MOVIMENTO
                 </div>
-                <div className="flex flex-col space-y-2 text-6xl tracking-tight text-emerald-900">
+                <div className="flex flex-col space-y-2 text-6xl tracking-wide text-emerald-900">
                     <div>LIBERDADE AVANÇA</div>
                     <CallToAction />
                 </div>
