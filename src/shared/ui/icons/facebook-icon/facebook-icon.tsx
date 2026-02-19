@@ -1,4 +1,4 @@
-import { BasicComponentProps } from "@/src/_shared/ui/icons/_shared/types";
+import { BasicComponentProps } from "@/src/shared/ui/icons/_shared/types";
 
 const FacebookIcon = ({ scale = 1, color = "currentColor" }: BasicComponentProps) => {
   return (

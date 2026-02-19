@@ -1,4 +1,4 @@
-import Footer from "@/src/_shared/ui/sections/footer/footer.section";
+import Footer from "@/src/shared/ui/sections/footer/footer.section";
 import Navbar from "../sections/navbar/navbar.section";
 
 
