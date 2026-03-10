@@ -27,10 +27,8 @@ class SocialDataXService {
         headers: this.headers,
         next: { revalidate: this.EIGHT_HOUR_CACHE_TTL }
       });
-
       const data = await response.json();
       return data;
-
     } catch (error) {
       console.error("Error fetching X feed:", error);
       throw error;
