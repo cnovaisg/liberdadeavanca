@@ -52,7 +52,8 @@ class SocialDataXService {
 
         return {
           date: postprocessedDate,
-          text: tweet?.full_text
+          text: tweet?.full_text,
+          id: tweet?.id_str
         };
       });
       return postprocessedResults;
