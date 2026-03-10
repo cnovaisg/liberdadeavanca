@@ -46,11 +46,13 @@ class SocialDataXService {
     const minutes = date.getMinutes().toString().padStart(2, "0");
     const day = date.getDate().toString().padStart(2, "0");
     const month = (date.getMonth() + 1).toString().padStart(2, "0");
-
-const postprocessedDate = `${hours}:${minutes} em ${day}/${month}`;
+const parsedDate = {
+  hour: `${hours}:${minutes}`,
+  day: `${day}/${month}`,
+}
 
         return {
-          date: postprocessedDate,
+          date: parsedDate,
           text: tweet?.full_text,
           id: tweet?.id_str
         };
