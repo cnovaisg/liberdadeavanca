@@ -1,13 +1,13 @@
 class SocialDataXService {
 
-  private baseUrl: string;
-  private headers: { [key: string]: string };
+  private readonly baseUrl: string;
+  private readonly headers: { [key: string]: string };
   private readonly EIGHT_HOUR_CACHE_TTL = 60 * 60 * 8;
 
   constructor() {
-    const USER = process.env.SOCIAL_DATA_X_TARGET_USER;
+    const USER = process.env.SOCIAL_DATA_X_ACCOUNT;
     const API_BASE_URL = process.env.SOCIAL_DATA_BASE_URL;
-    const TOKEN = process.env.SOCIAL_DATA_API_KEY; // fixed typo
+    const TOKEN = process.env.SOCIAL_DATA_API_KEY;
 
     if (!USER || !API_BASE_URL || !TOKEN) {
       throw new Error("Missing SocialData X environment variables");
@@ -20,7 +20,7 @@ class SocialDataXService {
     };
   }
 
-  async getXfeed() {
+  private async getXfeed() {
     try {
       const response = await fetch(this.baseUrl, {
         method: "GET",
@@ -39,9 +39,9 @@ class SocialDataXService {
 
     try {
       const results = await this.getXfeed();
-      const postprocessedREsults = results?.tweets?.map((tweet: any) => {
+      const postprocessedResults = results?.tweets?.map((tweet: any) => {
         const rawDate = tweet?.tweet_created_at;
-        const posrprocessedDate = new Date(rawDate).toLocaleString("pt-PT", {
+        const postprocessedDate = new Date(rawDate).toLocaleString("pt-PT", {
           weekday: "long",
           day: "numeric",
           month: "long",
@@ -51,11 +51,11 @@ class SocialDataXService {
         });
 
         return {
-          date: posrprocessedDate,
+          date: postprocessedDate,
           text: tweet?.full_text
         };
       });
-      return postprocessedREsults;
+      return postprocessedResults;
     } catch (error) {
       console.error("Error postprocessing X feed:", error);
       throw error;
