@@ -33,7 +33,8 @@ export default function RootLayout({
     <html lang="en">
       <body className={`${geist.variable} ${anton.variable}`}>
         <MainLayout>
-          {children}</MainLayout>
+          {children}
+        </MainLayout>
       </body>
     </html>
   );

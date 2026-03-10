@@ -45,14 +45,14 @@ class ManifestoService {
 
   constructor() {
     const SPACE_ID = process.env.CONTENTFUL_SPACE_ID
-    const API_BASE = process.env.CONTENTFUL_API_BASE_URL
+    const API_BASE_URL = process.env.CONTENTFUL_API_BASE_URL
     const TOKEN = process.env.CONTENTFUL_API_ACCESS_TOKEN
 
-    if (!SPACE_ID || !API_BASE || !TOKEN) {
+    if (!SPACE_ID || !API_BASE_URL || !TOKEN) {
       throw new Error("Missing Contentful environment variables")
     }
 
-    this.baseUrl = `${API_BASE}/spaces/${SPACE_ID}/environments/master`
+    this.baseUrl = `${API_BASE_URL}/spaces/${SPACE_ID}/environments/master`
     this.headers = { Authorization: `Bearer ${TOKEN}`, "Content-Type": "application/json" }
   }
 

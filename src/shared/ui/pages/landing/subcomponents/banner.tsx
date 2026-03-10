@@ -1,8 +1,12 @@
 import Image from "next/image";
 import CallToAction from "./Call-to-action";
+import XFeed from "./x-feed";
+
 const Banner = () => {
     return (
-        <div className="pt-36 ps-27 w-full z-50">
+        <div className="pt-[12%] ps-[9%] w-full z-50">
+            <div>
+            <XFeed/>
             <h1 className="flex items-baseline font-anton space-x-1.5">
                 <div className="text-2xl tracking-wide text-emerald-700">
                     MOVIMENTO
@@ -12,6 +16,7 @@ const Banner = () => {
                     <CallToAction />
                 </div>
             </h1>
+            </div>
         </div>
     );
 };
