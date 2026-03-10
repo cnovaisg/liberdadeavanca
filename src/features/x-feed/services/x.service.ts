@@ -13,7 +13,7 @@ class SocialDataXService {
       throw new Error("Missing SocialData X environment variables");
     }
 
-    this.baseUrl = `${API_BASE_URL}/search?query=from:${USER}&type=Latest&limit=3`;
+    this.baseUrl = `${API_BASE_URL}/search?query=from:${USER}&type=Latest`;
     this.headers = {
       Authorization: `Bearer ${TOKEN}`,
       "Content-Type": "application/json"
@@ -41,14 +41,13 @@ class SocialDataXService {
       const results = await this.getXfeed();
       const postprocessedResults = results?.tweets?.map((tweet: any) => {
         const rawDate = tweet?.tweet_created_at;
-        const postprocessedDate = new Date(rawDate).toLocaleString("pt-PT", {
-          weekday: "long",
-          day: "numeric",
-          month: "long",
-          year: "numeric",
-          hour: "2-digit",
-          minute: "2-digit"
-        });
+   const date = new Date(rawDate);
+    const hours = date.getHours().toString().padStart(2, "0");
+    const minutes = date.getMinutes().toString().padStart(2, "0");
+    const day = date.getDate().toString().padStart(2, "0");
+    const month = (date.getMonth() + 1).toString().padStart(2, "0");
+
+const postprocessedDate = `${hours}:${minutes} em ${day}/${month}`;
 
         return {
           date: postprocessedDate,

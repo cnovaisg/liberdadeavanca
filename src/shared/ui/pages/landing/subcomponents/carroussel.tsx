@@ -1,6 +1,5 @@
 "use client";
 
-
 type ItemType = {
   date: string;
   text: string;
@@ -13,13 +12,14 @@ type CarouselItemProps = {
   user: string;
   text: string;
   id: string;
+  date: string;
   width: number;
   height: number;
   margin: number;
 };
 
-const ITEM_WIDTH = 200;
-const ITEM_HEIGHT = 150;
+const ITEM_WIDTH = 100;
+const ITEM_HEIGHT = 100;
 const ITEM_MARGIN = 20;
 const PIXELS_PER_SECOND = 40;
 const WINDOW_WIDTH_CLASS= "w-30"
@@ -41,6 +41,7 @@ const Carousel = ({ user, items }: CarouselProps) => {
           <CarouselItem
             user={user}
             text={item.text}
+            date={item.date}
             id={item.id}
             key={`SET_A_${index}`}
             width={ITEM_WIDTH}
@@ -52,6 +53,7 @@ const Carousel = ({ user, items }: CarouselProps) => {
           <CarouselItem
             user={user}
             text={item.text}
+            date={item.date}
             id={item.id}
             key={`SET_B_${index}`}
             width={ITEM_WIDTH}
@@ -72,21 +74,28 @@ const Carousel = ({ user, items }: CarouselProps) => {
 };
 
 
-const CarouselItem = ({ user, text, id, width, height, margin }: CarouselItemProps) => {
+const CarouselItem = ({ user, text, id, date, width, height, margin }: CarouselItemProps) => {
   const url = `https://x.com/${user}/status/${id}`;
 
 return (
 <a href={url} target="_blank" rel="noopener noreferrer">
-<div className="p-2 bg-zinc-200 rounded text-emerald-900 flex break-words break-all overflow-hidden"
+<div className="p-2 bg-zinc-50 rounded text-emerald-900 flex overflow-hidden"
 style={{
   width: `${ITEM_WIDTH}px`,
   height: `${ITEM_HEIGHT}px`,
   marginRight: `${ITEM_MARGIN}px`,
 }}
 >
-  <p className="leading-5 hyphens-auto line-clamp-[5] text-ellipsis text-xs font-semibold tracking-wide">
+    <div className="flex flex-col">
+        <div className="text-[10px] font-extrabold  tracking-wide">{date}</div>
+  <p 
+  
+  lang="pt"
+  className="italic leading-4 break-words hyphens-auto line-clamp-[4] text-ellipsis text-[10px] font-semibold tracking-wide">
     {text}
   </p>
+
+  </div>
 </div>
 </a>)
 
