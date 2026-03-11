@@ -8,16 +8,25 @@ export type ManifestoEntryType = {
 	fields: {
 		title: string;
 		subtitle?: string;
+
+		intro?: {
+			content: Array<{
+				content: Array<{ value: string }>;
+			}>;
+		};
+
 		manifestoContent: {
 			content: Array<{
 				content: Array<{ value: string }>;
 			}>;
 		};
+
 		authors?: Array<
 			| { sys: { id: string; type?: string; linkType?: string } }
 			| { name: string; role: string; imageUrl: string }
 		>;
 	};
+
 	includes?: {
 		Entry?: Array<{
 			sys: { id: string };
@@ -30,14 +39,18 @@ export type PrunedManifestoEntryType = {
 	createdAt: string;
 	updatedAt: string;
 	revision: number;
+
 	title: string;
 	subtitle?: string;
+
+	intro: Array<{ paragraph: string }>;
 	value: Array<{ paragraph: string }>;
+
 	authors: Array<{ name: string; role: string; imageUrl: string }>;
 };
 
-const THIRTY_DAYS = 60 * 60 * 24 * 30;
-const MANIFESTO_TTL = THIRTY_DAYS;
+const ONE_DAY = 60 * 60 * 24;
+const MANIFESTO_TTL = 0;
 
 class ManifestoService {
 	private baseUrl: string;
@@ -73,8 +86,10 @@ class ManifestoService {
 					const linked = linkedEntries.find((e) => e.sys.id === author.sys.id);
 					return linked?.fields ?? null;
 				}
+
 				if ("name" in author && "role" in author && "imageUrl" in author)
 					return author;
+
 				return null;
 			})
 			.filter(Boolean) as Array<{
@@ -86,24 +101,41 @@ class ManifestoService {
 		return authors;
 	}
 
-	private pruneManifesto(manifesto: ManifestoEntryType | null) {
-		if (!manifesto) return null;
-
-		const { createdAt, updatedAt, revision } = manifesto.sys;
-		const { title, subtitle } = manifesto.fields;
-
-		const value =
-			manifesto.fields.manifestoContent?.content?.flatMap((paragraph) =>
+	private parseRichTextField(field?: {
+		content: Array<{ content: Array<{ value: string }> }>;
+	}) {
+		return (
+			field?.content?.flatMap((paragraph) =>
 				paragraph.content
 					.map((node) => node.value)
 					.join("")
 					.split(/\n+/)
 					.filter(Boolean)
 					.map((text) => ({ paragraph: text.trim() })),
-			) ?? [];
+			) ?? []
+		);
+	}
 
+	private pruneManifesto(manifesto: ManifestoEntryType | null) {
+		if (!manifesto) return null;
+
+		const { createdAt, updatedAt, revision } = manifesto.sys;
+		const { title, subtitle, intro: rawIntro, manifestoContent } = manifesto.fields;
+
+		const intro = this.parseRichTextField(rawIntro);
+		const value = this.parseRichTextField(manifestoContent);
 		const authors = this.resolveAuthors(manifesto);
-		return { createdAt, updatedAt, revision, title, subtitle, value, authors };
+
+		return {
+			createdAt,
+			updatedAt,
+			revision,
+			title,
+			subtitle,
+			intro,
+			value,
+			authors,
+		};
 	}
 
 	async getManifesto(): Promise<PrunedManifestoEntryType | null> {
@@ -112,20 +144,21 @@ class ManifestoService {
 			headers: this.headers,
 			next: { revalidate: MANIFESTO_TTL },
 		});
+
 		if (!response.ok)
 			throw new Error(
 				`Contentful API error: ${response.status} ${response.statusText}`,
 			);
-		const data = await response.json();
 
+		const data = await response.json();
 		const manifesto = data.items?.[0];
 		if (!manifesto) return null;
-
-		const prunedMAnifesto = this.pruneManifesto({
+		const prunedManifesto = this.pruneManifesto({
 			...manifesto,
 			includes: data.includes,
 		});
-		return prunedMAnifesto;
+
+		return prunedManifesto;
 	}
 }
 
