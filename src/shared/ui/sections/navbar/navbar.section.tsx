@@ -3,7 +3,7 @@ import SocialMediaSegment from "./subcomponents/social-media.segment"
 
 const Navbar = () => {
     return (
-        <div className="w-full flex justify-between">
+        <div className="w-full shrink-0 flex justify-between">
             <NavSegment />
             <SocialMediaSegment />
         </div>

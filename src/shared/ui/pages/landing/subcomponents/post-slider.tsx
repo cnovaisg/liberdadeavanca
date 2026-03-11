@@ -26,8 +26,8 @@ type PostCardProps = {
 	};
 };
 
-const ITEM_WIDTH_CLASS = "w-27";
-const ITEM_HEIGHT_CLASS = "h-30";
+const ITEM_WIDTH_CLASS = "w-30";
+const ITEM_HEIGHT_CLASS = "h-32";
 const DISPLAY_TIME = 4500;
 
 const PostSlider = ({ user, items }: CarouselProps) => {
@@ -84,7 +84,7 @@ const PostCard = ({ user, text, id, date }: PostCardProps) => {
 				</div>
 				<p
 					lang="pt"
-					className="leading-4 break-words hyphens-auto line-clamp-5 overflow-hidden text-ellipsis text-[10px] text-zinc-700 font-[700] tracking-wide"
+					className="leading-5 break-words hyphens-auto line-clamp-5 overflow-hidden text-ellipsis text-xs text-zinc-700 font-[700] tracking-wide"
 				>
 					{text}
 				</p>
