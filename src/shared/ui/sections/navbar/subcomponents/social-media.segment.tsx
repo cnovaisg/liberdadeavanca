@@ -22,7 +22,7 @@ const SocialMediaSegment = () => {
 
 				return (
 					<a
-						className="flex justify-center items-center rounded p-0.5 hover:bg-emerald-300 duration-200 ease-out transition-colours"
+						className="flex justify-center items-center rounded p-0.5 hover:bg-emerald-100 duration-200 ease-out transition-colours"
 						key={`icon_${index}`}
 						href={link.url}
 					>

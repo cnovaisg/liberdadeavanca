@@ -1,6 +1,7 @@
 import Image from "next/image";
 import CallToAction from "./Call-to-action";
 import XPostsFeed from "./x-posts-feed";
+import Title from "./title";
 
 const Banner = () => {
     return (
@@ -11,7 +12,7 @@ const Banner = () => {
                     MOVIMENTO
                 </div>
                 <div className="flex flex-col space-y-2 text-6xl tracking-wide text-emerald-900">
-                    <div>LIBERDADE AVANÇA</div>
+                    <Title />
                     <CallToAction />
                     <XPostsFeed/>
                 </div>

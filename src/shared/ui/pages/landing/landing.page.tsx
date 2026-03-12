@@ -3,7 +3,7 @@ import ImageContainer from "./subcomponents/image-container";
 
 const Landing = () => {
 	return (
-		<div className="relative flex w-full min-h-full h-full shrink-0">
+		<div className="relative flex w-full h-full shrink-0">
 			<Banner />
 			<ImageContainer />
 		</div>

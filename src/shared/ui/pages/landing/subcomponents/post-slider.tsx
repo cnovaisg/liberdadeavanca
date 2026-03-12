@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
+import Xicon from "../../../icons/x/x.icon";
 
 type ItemType = {
 	date: {
@@ -77,10 +78,14 @@ const PostCard = ({ user, text, id, date }: PostCardProps) => {
 			<div
 				className={`w-full text-emerald-700 flex flex-col space-y-2 ${ITEM_WIDTH_CLASS} ${ITEM_HEIGHT_CLASS}`}
 			>
-				<div className="text-[10px] font-[900] w-full tracking-wide flex ">
-					<div>{date.hour}</div>
-					&nbsp;·&nbsp;
-					<div>{date.day}</div>
+				<div className="text-[10px] font-[900] w-full tracking-wide flex items-center">
+					<div className="flex">
+						<div>{date.hour}</div>
+						&nbsp;·&nbsp;
+						<div>{date.day}</div>
+						&nbsp;·&nbsp;
+						<div>X</div>
+					</div>
 				</div>
 				<p
 					lang="pt"
