@@ -10,7 +10,7 @@ type LinkType = {
 
 const LINKS: LinkType[] = [
 	{ url: "", icon: <Xicon scale={0.75} /> },
-	{ url: "", icon: <FacebookIcon scale={0.75}/> },
+	{ url: "", icon: <FacebookIcon scale={0.75} /> },
 	{ url: "", icon: <MailCIon scale={0.75} /> },
 ];
 
@@ -22,11 +22,8 @@ const SocialMediaSegment = () => {
 
 				return (
 					<a
-						className="flex justify-center items-center rounded p-0.5 hover:bg-emerald-300 duration-150 transition-colours"
-						key={`icon_${
-							// biome-ignore lint/suspicious/noArrayIndexKey: <explanation>
-							index
-						}`}
+						className="flex justify-center items-center rounded p-0.5 hover:bg-emerald-300 duration-200 ease-out transition-colours"
+						key={`icon_${index}`}
 						href={link.url}
 					>
 						{Icon}
