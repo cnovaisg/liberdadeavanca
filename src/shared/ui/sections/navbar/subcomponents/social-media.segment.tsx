@@ -1,4 +1,3 @@
-import FacebookIcon from "../../../icons/facebook/facebook.icon";
 import MailCIon from "../../../icons/mail/mail.icon";
 import Xicon from "../../../icons/x/x.icon";
 import type { ReactNode } from "react";
@@ -8,10 +7,15 @@ type LinkType = {
 	icon: ReactNode;
 };
 
+const X_ACCOUNT = process.env.SOCIAL_DATA_X_ACCOUNT;
+const MAIL = process.env.ACCOUNT_MAIL;
+
+const xUrl = `https://x.com/${X_ACCOUNT?.replace("@", "")}`;
+const mailUrl = `mailto:${MAIL}`;
+
 const LINKS: LinkType[] = [
-	{ url: "", icon: <Xicon scale={0.75} /> },
-	{ url: "", icon: <FacebookIcon scale={0.75} /> },
-	{ url: "", icon: <MailCIon scale={0.75} /> },
+	{ url: xUrl, icon: <Xicon scale={0.75} /> },
+	{ url: mailUrl, icon: <MailCIon scale={0.75} /> },
 ];
 
 const SocialMediaSegment = () => {

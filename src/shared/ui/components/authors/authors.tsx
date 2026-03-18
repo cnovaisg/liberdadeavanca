@@ -1,37 +1,30 @@
 import LabelValue from "../label-value/label-value";
-import Avatar from "../avatar/avatar";
 
-type AuthorType = {
+export type AuthorType = {
 	name: string;
 	role: string;
 	contact?: string;
 	imageUrl: string;
 };
 
-type AuthorsProps = {
+export type AuthorsProps = {
 	authors: AuthorType[];
 };
 
 const generateParsedAuthorsNames = (authors?: AuthorType[]) => {
-	if (!authors || authors.length === 0) return "";
-	const numberofAuthors = authors.length;
-	if (numberofAuthors === 1) {
-		return authors[0].name;
-	}
-	if (numberofAuthors === 2) {
-		return `${authors[0].name} e ${authors[1].name} `;
-	}
-	if (numberofAuthors > 2) {
-		return `${authors[0].name}, ${authors[1].name} e ${numberofAuthors - 2} ${numberofAuthors === 3 ? "outro" : "outros"} `;
-	}
+  if (!authors || authors.length === 0) return "";
+  const numberOfAuthors = authors.length;
+  if (numberOfAuthors === 1) return authors[0].name;
+  if (numberOfAuthors === 2) return `${authors[0].name} e ${authors[1].name}`;
+  if (numberOfAuthors === 3) return `${authors[0].name}, ${authors[1].name} e ${authors[2].name}`;
+  return `${authors[0].name}, ${authors[1].name} e ${numberOfAuthors - 2} ${numberOfAuthors === 4 ? "outro" : "outros"}`;
 };
 
 const Authors = ({ authors }: AuthorsProps) => {
 	const postprocessedAuthors = generateParsedAuthorsNames(authors);
 
 	return (
-		<div className="flex items-center space-x-1">
-			<Avatar name={authors[0]?.name} imageUrl={authors[0]?.imageUrl} />
+		<div className="flex items-center space-x-2">
 			<LabelValue label="autores:" value={postprocessedAuthors as string} />
 		</div>
 	);

@@ -1,7 +1,7 @@
 class SocialDataXService {
 	private readonly baseUrl: string;
 	private readonly headers: { [key: string]: string };
-	private readonly EIGHT_HOUR_CACHE_TTL = 60 * 60 * 8;
+	private readonly EIGHT_HOUR_CACHE_TTL = 0;
 
 	constructor() {
 		const USER = process.env.SOCIAL_DATA_X_ACCOUNT;
