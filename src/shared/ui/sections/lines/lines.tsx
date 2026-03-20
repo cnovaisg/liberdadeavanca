@@ -49,11 +49,11 @@ const Lines = ({ paragraph, maxCharsPerLine = 40 }: LinesProps) => {
 				className="inline-block"
 				lang="pt"
 			>
-				{lines.map((lineText, i) => (
+				{lines.map((lineText, index) => (
 					<motion.span
-						key={i}
+						key={index}
 						variants={itemVariants}
-						className="prose prose-lg font-[600] "
+						className="prose font-[600] "
 					>
 						{lineText}
 					</motion.span>
