@@ -53,7 +53,7 @@ const Lines = ({ paragraph, maxCharsPerLine = 40 }: LinesProps) => {
 					<motion.span
 						key={i}
 						variants={itemVariants}
-						className="prose prose-2xl font-[600] "
+						className="prose prose-xl font-[600] "
 					>
 						{lineText}
 					</motion.span>
