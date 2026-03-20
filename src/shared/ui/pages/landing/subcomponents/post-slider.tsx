@@ -1,101 +1,104 @@
 "use client";
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import Xicon from "../../../icons/x/x.icon";
 
 type ItemType = {
-	date: {
-		hour: string;
-		day: string;
-	};
-	text: string;
-	id: string;
+  date: {
+    hour: string;
+    day: string;
+  };
+  text: string;
+  id: string;
 };
 
 type CarouselProps = {
-	user: string;
-	items: ItemType[];
+  user: string;
+  items?: ItemType[]; // make optional to be safe
 };
 
 type PostCardProps = {
-	user: string;
-	text: string;
-	id: string;
-	date: {
-		hour: string;
-		day: string;
-	};
+  user: string;
+  text: string;
+  id: string;
+  date: {
+    hour: string;
+    day: string;
+  };
 };
 
 const ITEM_WIDTH_CLASS = "w-30";
 const ITEM_HEIGHT_CLASS = "h-32";
 const DISPLAY_TIME = 4500;
 
-const PostSlider = ({ user, items }: CarouselProps) => {
-	const [currentIndex, setCurrentIndex] = useState(0);
+const PostSlider = ({ user, items = [] }: CarouselProps) => {
+  const [currentIndex, setCurrentIndex] = useState(0);
 
-	useEffect(() => {
-		const interval = setInterval(() => {
-			setCurrentIndex((i) => (i + 1) % items.length);
-		}, DISPLAY_TIME);
+  useEffect(() => {
+    if (!items.length) return;
 
-		return () => clearInterval(interval);
-	}, [items.length]);
+    const interval = setInterval(() => {
+      setCurrentIndex((i) => (i + 1) % items.length);
+    }, DISPLAY_TIME);
 
-	const item = items[currentIndex];
+    return () => clearInterval(interval);
+  }, [items]);
 
-	return (
-		<div
-			className={`pt-3 relative ${ITEM_WIDTH_CLASS} ${ITEM_HEIGHT_CLASS} overflow-hidden`}
-		>
-			<AnimatePresence mode="wait">
-				<PostCard
-					key={item.id}
-					user={user}
-					id={item.id}
-					text={item.text}
-					date={item.date}
-				/>
-			</AnimatePresence>
-		</div>
-	);
+  const item = items[currentIndex];
+
+  if (!item) return null;
+
+  return (
+    <div
+      className={`pt-3 relative ${ITEM_WIDTH_CLASS} ${ITEM_HEIGHT_CLASS} overflow-hidden`}
+    >
+      <AnimatePresence mode="wait">
+        <PostCard
+          key={item.id}
+          user={user}
+          id={item.id}
+          text={item.text}
+          date={item.date}
+        />
+      </AnimatePresence>
+    </div>
+  );
 };
 
 const PostCard = ({ user, text, id, date }: PostCardProps) => {
-	const url = `https://x.com/${user}/status/${id}`;
+  const url = `https://x.com/${user}/status/${id}`;
 
-	return (
-		<motion.a
-			href={url}
-			target="_blank"
-			rel="noopener noreferrer"
-			className="w-full font-geist"
-			initial={{ opacity: 0 }}
-			animate={{ opacity: 1 }}
-			exit={{ opacity: 0 }}
-			transition={{ duration: 0.7 }}
-		>
-			<div
-				className={`w-full text-emerald-700 flex flex-col space-y-2 ${ITEM_WIDTH_CLASS} ${ITEM_HEIGHT_CLASS}`}
-			>
-				<div className="text-[10px] font-[900] w-full tracking-wide flex items-center">
-					<div className="flex">
-						<div>{date.hour}</div>
-						&nbsp;·&nbsp;
-						<div>{date.day}</div>
-						&nbsp;·&nbsp;
-						<div>X</div>
-					</div>
-				</div>
-				<p
-					lang="pt"
-					className="leading-5 break-words hyphens-auto line-clamp-5 overflow-hidden text-ellipsis text-xs text-zinc-700 font-[700] tracking-wide"
-				>
-					{text}
-				</p>
-			</div>
-		</motion.a>
-	);
+  return (
+    <motion.a
+      href={url}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="w-full font-geist"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.7 }}
+    >
+      <div
+        className={`w-full text-emerald-700 flex flex-col space-y-2 ${ITEM_WIDTH_CLASS} ${ITEM_HEIGHT_CLASS}`}
+      >
+        <div className="text-[10px] font-[900] w-full tracking-wide flex items-center">
+          <div className="flex">
+            <div>{date.hour}</div>
+            &nbsp;·&nbsp;
+            <div>{date.day}</div>
+            &nbsp;·&nbsp;
+            <div>X</div>
+          </div>
+        </div>
+        <p
+          lang="pt"
+          className="leading-5 break-words hyphens-auto line-clamp-5 overflow-hidden text-ellipsis text-xs text-zinc-700 font-[700] tracking-wide"
+        >
+          {text}
+        </p>
+      </div>
+    </motion.a>
+  );
 };
 
 export default PostSlider;

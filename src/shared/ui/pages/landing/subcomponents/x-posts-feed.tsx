@@ -1,7 +1,7 @@
 import { Suspense, use } from "react";
 import socialDataXService from "@/src/features/x-feed/services/x.service";
 import PostSlider from "./post-slider";
-
+import Spinner from "../../../components/spinner/spinner";
 const socialDataPromise = socialDataXService.getPostprocessedXfeed();
 
 const XFeedContent = () => {
@@ -17,7 +17,7 @@ const XFeedContent = () => {
 
 const XPostsFeed = () => {
 	return (
-		<Suspense fallback={<div>Loading tweets...</div>}>
+		<Suspense fallback={<Spinner />}>
 			<XFeedContent />
 		</Suspense>
 	);
