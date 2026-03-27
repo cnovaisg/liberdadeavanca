@@ -22,12 +22,37 @@ const characterVariants = {
 	},
 };
 
+const AnimatedWord = ({ word }: { word: string }) => (
+	<motion.span
+		className="inline-flex"
+		variants={{ show: { transition: { staggerChildren: 0.05 } } }}
+	>
+		{[...word].map((char, i) => (
+			<motion.span
+				key={i}
+				className="inline-block"
+				variants={characterVariants}
+			>
+				{char}
+			</motion.span>
+		))}
+	</motion.span>
+);
+
 const Title = () => {
-	const title = "LIBERDADE AVANÇA";
+	const title = ["LIBERDADE", "AVANÇA"];
 
 	return (
 		<div className="relative inline-block">
-			<div className="opacity-0 select-none pointer-events-none">{title}</div>
+			<div className="opacity-0 select-none pointer-events-none">
+				<div className="flex flex-col md:hidden">
+					<span>{title[0]}</span>
+					<span>{title[1]}</span>
+				</div>
+				<div className="hidden md:flex">
+					<span>{`${title[0]} ${title[1]}`}</span>
+				</div>
+			</div>
 
 			<motion.div
 				className="absolute inset-0"
@@ -35,15 +60,13 @@ const Title = () => {
 				animate="show"
 				variants={containerVariants}
 			>
-				{title.split("").map((char, index) => (
-					<motion.span
-						key={index}
-						variants={characterVariants}
-						className="inline-block"
-					>
-						{char}
-					</motion.span>
-				))}
+				<div className="flex flex-col md:hidden">
+					<AnimatedWord word={title[0]} />
+					<AnimatedWord word={title[1]} />
+				</div>
+				<div className="hidden md:flex">
+					<AnimatedWord word={`${title[0]} ${title[1]}`} />
+				</div>
 			</motion.div>
 		</div>
 	);
