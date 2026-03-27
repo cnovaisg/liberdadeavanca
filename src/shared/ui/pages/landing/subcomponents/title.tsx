@@ -50,9 +50,7 @@ const Title = () => {
 					<span>{title[1]}</span>
 				</div>
 				<div className="hidden md:flex">
-					<div>
-						{title[0]}&nbsp;{title[1]}
-					</div>
+					<AnimatedWord word={`${title[0]}\u00A0${title[1]}`} />
 				</div>
 			</div>
 
