@@ -1,7 +1,7 @@
 class SocialDataXService {
 	private readonly baseUrl: string;
 	private readonly headers: { [key: string]: string };
-	private readonly EIGHT_HOUR_CACHE_TTL = 0;
+	private readonly THREE_DAY_CACHE = 60 * 60 * 24 * 3 ;
 
 	constructor() {
 		const USER = process.env.SOCIAL_DATA_X_ACCOUNT;
@@ -24,13 +24,9 @@ class SocialDataXService {
 			const response = await fetch(this.baseUrl, {
 				method: "GET",
 				headers: this.headers,
-				next: { revalidate: this.EIGHT_HOUR_CACHE_TTL },
+				next: { revalidate: this.THREE_DAY_CACHE },
 			});
 			const data = await response.json();
-			console.log("PPPPPPPPPPPP");
-			console.log("PPPPPPPPPPPP");
-			console.log("PPPPPPPPPPPP");
-			console.log(JSON.stringify(data, null, 2));
 			return data;
 		} catch (error) {
 			console.error("Error fetching X feed:", error);
