@@ -5,7 +5,7 @@ import Title from "./title";
 
 const Banner = () => {
     return (
-        <div className="pt-[12%] ps-[9%] w-full z-50">
+        <div className="pt-[7%] sm:pt-[12%] ps-[9%] w-full z-50">
             <div>
             <h1 className="flex items-baseline font-anton space-x-1.5">
                 <div className="text-2xl tracking-wide text-emerald-700">
