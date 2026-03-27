@@ -12,6 +12,10 @@ const Banner = () => {
 						MOVIMENTO
 					</div>
 					<div className="flex flex-col space-y-2 text-6xl tracking-wide text-emerald-900">
+						<div className="flex flex-col sm:hidden">
+							<div>LIBERDADE</div>
+							<div>AVANÇA</div>
+						</div>
 						<div className="hidden sm:flex">
 							<Title />
 						</div>
