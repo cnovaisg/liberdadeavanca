@@ -50,7 +50,9 @@ const Title = () => {
 					<span>{title[1]}</span>
 				</div>
 				<div className="hidden md:flex">
-					<span>{`${title[0]} ${title[1]}`}</span>
+					<div>
+						{title[0]}&nbsp;{title[1]}
+					</div>
 				</div>
 			</div>
 
