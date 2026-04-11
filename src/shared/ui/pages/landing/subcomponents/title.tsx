@@ -1,11 +1,12 @@
 "use client";
+
 import { easeOut, motion } from "motion/react";
 
 const containerVariants = {
 	hidden: {},
 	show: {
 		transition: {
-			staggerChildren: 0.018,
+			staggerChildren: 0.015,
 		},
 	},
 };
@@ -16,18 +17,15 @@ const characterVariants = {
 		opacity: 1,
 		x: 0,
 		transition: {
-			duration: 0.18,
+			duration: 0.1,
 			ease: easeOut,
 		},
 	},
 };
 
-const AnimatedWord = ({ word }: { word: string }) => (
-	<motion.span
-		className="inline-flex"
-		variants={{ show: { transition: { staggerChildren: 0.05 } } }}
-	>
-		{[...word].map((char, i) => (
+const AnimatedText = ({ text }: { text: string }) => (
+	<motion.span className="inline-flex" variants={containerVariants}>
+		{[...text].map((char, i) => (
 			<motion.span
 				key={i}
 				className="inline-block"
@@ -40,32 +38,34 @@ const AnimatedWord = ({ word }: { word: string }) => (
 );
 
 const Title = () => {
-	const title = ["LIBERDADE", "AVANÇA"];
+	const words = ["LIBERDADE", "AVANÇA"];
+	const fullText = words.join("\u00A0"); // NBSP keeps spacing in one string
 
 	return (
 		<div className="relative inline-block">
+			{/* invisible layout keeper */}
 			<div className="opacity-0 select-none pointer-events-none">
 				<div className="flex flex-col md:hidden">
-					<span>{title[0]}</span>
-					<span>{title[1]}</span>
+					<span>{words[0]}</span>
+					<span>{words[1]}</span>
 				</div>
-				<div className="hidden md:flex">
-					<AnimatedWord word={`${title[0]}\u00A0${title[1]}`} />
+
+				<div className="hidden md:block">
+					<span>{fullText}</span>
 				</div>
 			</div>
 
-			<motion.div
-				className="absolute inset-0"
-				initial="hidden"
-				animate="show"
-				variants={containerVariants}
-			>
-				<div className="flex flex-col md:hidden">
-					<AnimatedWord word={title[0]} />
-					<AnimatedWord word={title[1]} />
+			{/* animated layer */}
+			<motion.div className="absolute inset-0" initial="hidden" animate="show">
+				{/* mobile: split words */}
+				<div className="flex flex-col md:hidden gap-y-2">
+					<AnimatedText text={words[0]} />
+					<AnimatedText text={words[1]} />
 				</div>
-				<div className="hidden md:flex">
-					<AnimatedWord word={`${title[0]} ${title[1]}`} />
+
+				{/* desktop: single string */}
+				<div className="hidden md:block">
+					<AnimatedText text={fullText} />
 				</div>
 			</motion.div>
 		</div>
