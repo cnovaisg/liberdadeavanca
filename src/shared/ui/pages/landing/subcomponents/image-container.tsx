@@ -11,7 +11,7 @@ const FADE_IN = {
 
 const ImageContainer = () => {
 	return (
-		<div className="absolute bottom-0 right-0 z-10 pointer-events-none w-[60vw] max-w-[750px]">
+		<div className="absolute bottom-0 right-0 z-10 pointer-events-none w-[70vw] max-w-[1000px]">
 			<motion.div className="relative w-full aspect-video" {...FADE_IN}>
 				<Image
 					src="/images/path.png"
