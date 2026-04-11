@@ -12,12 +12,18 @@ const FADE_IN = {
 const ImageContainer = () => {
 	return (
 		<div
-			className="	absolute bottom-0 right-0 z-10 pointer-events-none 	w-[70vw] max-w-[1000px] max-md:w-[140vw] max-md:top-0 max-md:bottom-auto max-md:right-0 max-md:translate-x-0"
+			className="
+				absolute bottom-0 right-0 z-10 pointer-events-none
+				w-[70vw] max-w-[1000px]
+
+				max-md:w-[140vw]
+				max-md:right-1/2 max-md:translate-x-1/2
+				max-md:bottom-[-15%]
+			"
 		>
 			<motion.div
 				className="
 					relative w-full aspect-video
-
 					max-md:aspect-[3/2]
 					max-md:scale-150
 				"
