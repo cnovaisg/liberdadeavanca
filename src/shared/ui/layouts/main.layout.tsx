@@ -7,7 +7,7 @@ export default function MainLayout({
 	children: React.ReactNode;
 }) {
 	return (
-		<div className="grid grid-rows-[100dvh_auto] w-full">
+		<div className="grid grid-rows-[100dvh_auto] w-full min-w-[320px]">
 			<div className="grid grid-rows-[auto_1fr] ps-4 pt-4 border border-zinc-100 overflow-hidden">
 				<Navbar />
 				{children}
