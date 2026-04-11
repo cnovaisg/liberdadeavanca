@@ -9,9 +9,16 @@ const CallToAction = () => {
 			initial={{ opacity: 0 }}
 			animate={{ opacity: 1 }}
 			transition={{ duration: 0.3, ease: "easeOut", delay: 0.35 }}
-			className="flex space-x-2 border-[1.5px] rounded-xs border-emerald-700 text-emerald-700 tracking-widest w-fit whitespace-nowrap px-3 py-1.5 text-xs"
+			className="
+				flex flex-col md:flex-row
+				space-y-2 md:space-y-0
+				md:space-x-2
+
+				border-[1.5px] rounded-xs border-emerald-700 text-emerald-700 tracking-widest
+				w-fit whitespace-nowrap px-3 py-1.5 text-xs
+			"
 		>
-			<h2 className="pe-2 border-e-[1.5px] border-emerald-700">
+			<h2 className="pe-0 md:pe-2 md:border-e-[1.5px] border-emerald-700">
 				Em defesa dos direitos do indivíduo
 			</h2>
 
