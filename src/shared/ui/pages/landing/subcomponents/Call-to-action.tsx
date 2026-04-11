@@ -16,8 +16,8 @@ const CallToAction = () => {
 				border-[1.5px] rounded-xs border-emerald-700 text-emerald-700 tracking-widest
 				w-fit px-3 py-1.5 text-xs
 
-				max-md:w-full
-				max-md:max-w-[100%]
+				max-md:w-[70%]
+				max-md:mx-auto
 				max-md:box-border
 			"
 		>
@@ -27,10 +27,7 @@ const CallToAction = () => {
 
 			<div className="h-px w-full bg-emerald-700 md:hidden" />
 
-			<Link
-				href="/manifesto"
-				className="text-emerald-900 italic flex items-center"
-			>
+			<Link href="/manifesto" className="text-emerald-900 italic flex items-center">
 				<span className="flex group space-x-1">
 					<span>Ver Manifesto</span>
 					<span>➔</span>
