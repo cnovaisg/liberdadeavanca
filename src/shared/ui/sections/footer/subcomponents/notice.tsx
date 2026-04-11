@@ -5,7 +5,10 @@ const Notice = () => {
 		currentYear > startYear ? `${startYear}-${currentYear}` : `${startYear}`;
 
 	return (
-		<div className="font-geist text-[9px] tracking-wide text-zinc-100" suppressHydrationWarning>
+		<div
+			className="font-geist text-[9px] tracking-wide text-zinc-100 whitespace-nowrap"
+			suppressHydrationWarning
+		>
 			© ${yearSpan} Carlos Novais. Todos os direitos reservados.
 		</div>
 	);

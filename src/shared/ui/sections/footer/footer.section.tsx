@@ -1,8 +1,11 @@
 import Notice from "./subcomponents/notice";
+import Legal from "./subcomponents/legal";
+
 const Footer = () => {
 	return (
-		<div className="flex w-full bg-emerald-950 px-4 py-2 h-12 shrink-0">
+		<div className="flex items-baseline w-full bg-emerald-950 px-4 py-2 space-x-4">
 			<Notice />
+			<Legal />
 		</div>
 	);
 };
