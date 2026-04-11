@@ -15,19 +15,29 @@ const ImageContainer = () => {
 			className="
 				absolute bottom-0 right-0 z-10 pointer-events-none
 				w-[70vw] max-w-[1000px]
-				max-md:w-[110vw]
-				max-md:right-1/2 max-md:translate-x-1/2
-				max-md:bottom-[-10%]
+
+				max-md:w-[140vw]
+				max-md:right-1/2
+				max-md:translate-x-1/2
+				max-md:bottom-[-20%]
 			"
 		>
-			<motion.div className="relative w-full aspect-video" {...FADE_IN}>
+			<motion.div
+				className="
+					relative w-full aspect-video
+
+					max-md:aspect-[4/3]
+					max-md:scale-125
+				"
+				{...FADE_IN}
+			>
 				<Image
 					src="/images/path.png"
 					alt="Landscape"
 					fill
 					priority
 					loading="eager"
-					className="object-cover max-md:object-contain"
+					className="object-cover"
 				/>
 			</motion.div>
 		</div>
