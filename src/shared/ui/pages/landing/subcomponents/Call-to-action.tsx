@@ -15,7 +15,10 @@ const CallToAction = () => {
 
 				border-[1.5px] rounded-xs border-emerald-700 text-emerald-700 tracking-widest
 				w-fit px-3 py-1.5 text-xs
+
 				max-md:w-full
+				max-md:max-w-[100%]
+				max-md:box-border
 			"
 		>
 			<h2 className="flex items-center md:block pb-2 md:pb-0 md:pe-2 md:border-e-[1.5px] border-emerald-700">
