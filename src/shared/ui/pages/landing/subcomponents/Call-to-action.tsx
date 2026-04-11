@@ -18,9 +18,11 @@ const CallToAction = () => {
 				w-fit whitespace-nowrap px-3 py-1.5 text-xs
 			"
 		>
-			<h2 className="pe-0 md:pe-2 md:border-e-[1.5px] border-emerald-700">
+			<h2 className="pb-2 md:pb-0 md:pe-2 md:border-e-[1.5px] border-emerald-700">
 				Em defesa dos direitos do indivíduo
 			</h2>
+
+			<div className="h-px w-full bg-emerald-700 md:hidden" />
 
 			<Link href="/manifesto" className="text-emerald-900 italic">
 				<span className="flex group space-x-1">
