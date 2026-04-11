@@ -26,8 +26,8 @@ const ImageContainer = () => {
 				className="
 					relative w-full aspect-video
 
-					max-md:aspect-[4/3]
-					max-md:scale-125
+					max-md:aspect-[3/2]
+					max-md:scale-150
 				"
 				{...FADE_IN}
 			>
