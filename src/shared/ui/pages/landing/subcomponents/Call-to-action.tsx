@@ -11,20 +11,23 @@ const CallToAction = () => {
 			transition={{ duration: 0.3, ease: "easeOut", delay: 0.35 }}
 			className="
 				flex flex-col md:flex-row
-				space-y-2 md:space-y-0
-				md:space-x-2
+				md:space-y-0 md:space-x-2
 
 				border-[1.5px] rounded-xs border-emerald-700 text-emerald-700 tracking-widest
-				w-fit whitespace-nowrap px-3 py-1.5 text-xs
+				w-fit px-3 py-1.5 text-xs
+				max-md:w-full
 			"
 		>
-			<h2 className="pb-2 md:pb-0 md:pe-2 md:border-e-[1.5px] border-emerald-700">
+			<h2 className="flex items-center md:block pb-2 md:pb-0 md:pe-2 md:border-e-[1.5px] border-emerald-700">
 				Em defesa dos direitos do indivíduo
 			</h2>
 
 			<div className="h-px w-full bg-emerald-700 md:hidden" />
 
-			<Link href="/manifesto" className="text-emerald-900 italic">
+			<Link
+				href="/manifesto"
+				className="text-emerald-900 italic flex items-center"
+			>
 				<span className="flex group space-x-1">
 					<span>Ver Manifesto</span>
 					<span>➔</span>
