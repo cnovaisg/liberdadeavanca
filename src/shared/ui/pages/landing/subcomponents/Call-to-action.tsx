@@ -16,8 +16,8 @@ const CallToAction = () => {
 				border-[1.5px] rounded-xs border-emerald-700 text-emerald-700 tracking-widest
 				w-fit px-3 py-1.5 text-xs
 
-				max-md:w-[70%]
-				max-md:mx-auto
+				max-md:max-w-[100%]
+				max-md:overflow-hidden
 				max-md:box-border
 			"
 		>
