@@ -11,7 +11,15 @@ const FADE_IN = {
 
 const ImageContainer = () => {
 	return (
-		<div className="absolute bottom-0 right-0 z-10 pointer-events-none w-[70vw] max-w-[1000px]">
+		<div
+			className="
+				absolute bottom-0 right-0 z-10 pointer-events-none
+				w-[70vw] max-w-[1000px]
+				max-md:w-[110vw]
+				max-md:right-1/2 max-md:translate-x-1/2
+				max-md:bottom-[-10%]
+			"
+		>
 			<motion.div className="relative w-full aspect-video" {...FADE_IN}>
 				<Image
 					src="/images/path.png"
@@ -19,7 +27,7 @@ const ImageContainer = () => {
 					fill
 					priority
 					loading="eager"
-					className="object-cover"
+					className="object-cover max-md:object-contain"
 				/>
 			</motion.div>
 		</div>
