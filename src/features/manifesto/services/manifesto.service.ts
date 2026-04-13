@@ -1,3 +1,5 @@
+//export const dynamic = "force-dynamic";
+
 export type ManifestoEntryType = {
 	sys: {
 		id: string;
@@ -120,7 +122,12 @@ class ManifestoService {
 		if (!manifesto) return null;
 
 		const { createdAt, updatedAt, revision } = manifesto.sys;
-		const { title, subtitle, intro: rawIntro, manifestoContent } = manifesto.fields;
+		const {
+			title,
+			subtitle,
+			intro: rawIntro,
+			manifestoContent,
+		} = manifesto.fields;
 
 		const intro = this.parseRichTextField(rawIntro);
 		const value = this.parseRichTextField(manifestoContent);
@@ -143,6 +150,7 @@ class ManifestoService {
 		const response = await fetch(url, {
 			headers: this.headers,
 			next: { revalidate: MANIFESTO_TTL },
+			cache: "no-store",
 		});
 
 		if (!response.ok)
