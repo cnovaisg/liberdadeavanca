@@ -6,7 +6,7 @@ import Spinner from "../../components/spinner/spinner";
 import Paragraphs from "../../sections/paragraphs/paragraphs";
 
 const MANIFESTO_LEAD =
-	"Este movimento de ideias propõe apoiar, dentro do ordenamento jurídico-constitucional português, um programa de redução do peso do Estado em 50% por cortes de impostos e despesa por privatizações tendo em vista um crescimento económico de 50% numa década e para o qual um corte análogo na regulamentação contribuirá também decisivamente.";
+	"Este movimento de ideias propõe apoiar, dentro do ordenamento jurídico-constitucional português e possíveis alterações, um programa de redução do peso do Estado na economia e sociedade civil em 50% por cortes quer nos impostos quer na despesa incluindo por privatizações com o objectivo de atingir um crescimento económico de 50% numa década e propor uma reforma da segurança social da componente contributiva que assegure equilíbrio financeiro mas também uma alternativa para as novas gerações.";
 
 const manifestoPromise = manifestoService.getManifesto();
 const ManifestoContent = () => {
