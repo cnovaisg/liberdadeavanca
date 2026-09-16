@@ -4,13 +4,22 @@
 body {
 	background-color: #fff;
 	color: #000;
+	font-family: var(--font-geist), ui-sans-serif, system-ui, sans-serif;
 }
 
 .font-geist {
-	font-family: var(--font-geist), sans-serif;
+	font-family: var(--font-geist), ui-sans-serif, system-ui, sans-serif;
 }
 
 .font-anton {
+	font-family: var(--font-anton), sans-serif;
+}
+
+.prose {
+	font-family: var(--font-geist), ui-sans-serif, system-ui, sans-serif;
+}
+
+.prose :where(h1, h2, h3, h4, h5, h6) {
 	font-family: var(--font-anton), sans-serif;
 }
 

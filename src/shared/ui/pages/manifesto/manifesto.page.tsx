@@ -4,13 +4,14 @@ import LabelValue from "../../components/label-value/label-value";
 import Authors from "../../components/authors/authors";
 import Spinner from "../../components/spinner/spinner";
 import Paragraphs from "../../sections/paragraphs/paragraphs";
-import Lines from "../../sections/lines/lines";
+
+const MANIFESTO_LEAD =
+	"Este movimento de ideias propõe apoiar, dentro do ordenamento jurídico-constitucional português, um programa de redução do peso do Estado em 50% por cortes de impostos e despesa por privatizações tendo em vista um crescimento económico de 50% numa década e para o qual um corte análogo na regulamentação contribuirá também decisivamente.";
 
 const manifestoPromise = manifestoService.getManifesto();
 const ManifestoContent = () => {
 	const manifesto = use(manifestoPromise);
 	const authors = manifesto?.authors;
-	const introContent = manifesto?.intro;
 	const mainContent = manifesto?.value;
 
 	const parsedPublicationDate = new Date(
@@ -31,8 +32,8 @@ const ManifestoContent = () => {
 
 	return (
 		<div className="flex flex-col w-full h-full shrink-0 overflow-y-auto">
-			<div className="pt-8 flex flex-col space-y-5 font-anton shrink-0">
-				<div className="flex flex-col space-y-1">
+			<div className="pt-8 flex flex-col space-y-5 shrink-0">
+				<div className="flex flex-col space-y-1 font-anton">
 					<h1 className="text-5xl text-emerald-900 tracking-wider">
 						{manifesto?.title?.toUpperCase()}
 					</h1>
@@ -58,10 +59,7 @@ const ManifestoContent = () => {
 				</div>
 			</div>
 			<div className="pt-8">
-				<Lines
-					paragraph={introContent?.[0]?.paragraph ?? ""}
-					maxCharsPerLine={45}
-				/>
+				<Paragraphs paragraphs={[{ paragraph: MANIFESTO_LEAD }]} />
 			</div>
 			<div className="flex pt-4 pb-10">
 				<Paragraphs paragraphs={mainContent!} initialDelay={1} />

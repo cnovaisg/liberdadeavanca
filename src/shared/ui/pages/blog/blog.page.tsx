@@ -36,8 +36,8 @@ const BlogContent = () => {
 
 	return (
 		<div className="flex flex-col w-full h-full shrink-0 overflow-y-auto">
-			<div className="pt-8 flex flex-col space-y-5 font-anton shrink-0">
-				<div className="flex flex-col space-y-1">
+			<div className="pt-8 flex flex-col space-y-5 shrink-0">
+				<div className="flex flex-col space-y-1 font-anton">
 					<h1 className="text-5xl text-emerald-900 tracking-wider">
 						{post?.title?.toUpperCase()}
 					</h1>
