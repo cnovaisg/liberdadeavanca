@@ -1,9 +1,9 @@
-import { notFound } from "next/navigation";
 import Link from "next/link";
+import { notFound } from "next/navigation";
 import blogService from "@/src/features/blog/services/blog.service";
 import Articleinfo from "../../sections/article-info/article-info";
-import Paragraphs from "../../sections/paragraphs/paragraphs";
 import Lines from "../../sections/lines/lines";
+import Paragraphs from "../../sections/paragraphs/paragraphs";
 
 type BlogPostPageProps = {
 	postId: string;

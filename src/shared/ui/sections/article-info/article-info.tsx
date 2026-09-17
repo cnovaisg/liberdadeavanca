@@ -1,15 +1,14 @@
+import type { AuthorType } from "../../components/authors/authors";
 import Authors from "../../components/authors/authors";
 import LabelValue from "../../components/label-value/label-value";
-import type { AuthorType } from "../../components/authors/authors";
 
 type ArticleinfoProps = {
-    authors: AuthorType[],
-    createdAt: string;
-    updatedAt: string;
-}
-const Articleinfo = ({ authors, createdAt, updatedAt }: ArticleinfoProps ) => {
-
-    const parsedPublicationDate = new Date(
+	authors: AuthorType[];
+	createdAt: string;
+	updatedAt: string;
+};
+const Articleinfo = ({ authors, createdAt, updatedAt }: ArticleinfoProps) => {
+	const parsedPublicationDate = new Date(
 		createdAt as string,
 	).toLocaleDateString("pt-PT", {
 		day: "numeric",
@@ -17,14 +16,14 @@ const Articleinfo = ({ authors, createdAt, updatedAt }: ArticleinfoProps ) => {
 		year: "numeric",
 	});
 
-	const parsedRevisionDate = new Date(
-		updatedAt as string,
-	).toLocaleDateString("pt-PT", {
-		day: "numeric",
-		month: "long",
-		year: "numeric",
-	});
-
+	const parsedRevisionDate = new Date(updatedAt as string).toLocaleDateString(
+		"pt-PT",
+		{
+			day: "numeric",
+			month: "long",
+			year: "numeric",
+		},
+	);
 
 	return (
 		<div className="flex flex-wrap items-center gap-x-5 gap-y-2">

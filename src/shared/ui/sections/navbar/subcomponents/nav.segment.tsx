@@ -1,7 +1,7 @@
 "use client";
+import { motion } from "motion/react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { motion } from "motion/react";
 
 const NavbarEntries = [
 	{ label: "Início", href: "/" },
