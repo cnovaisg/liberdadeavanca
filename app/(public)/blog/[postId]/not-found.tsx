@@ -18,7 +18,7 @@ const BlogPostNotFound = () => {
 					href="/blog"
 					className="font-anton text-sm text-emerald-600 hover:text-emerald-800 transition-colors duration-500 ease-in-out w-fit"
 				>
-					← VOLTAR AO BLOG
+					<span className="font-geist">←</span> VOLTAR AO BLOG
 				</Link>
 			</div>
 		</div>

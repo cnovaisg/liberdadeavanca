@@ -48,7 +48,7 @@ const PostSummary = ({ post, featured = false }: PostSummaryProps) => {
 			) : null}
 
 			<span className="font-anton text-sm text-emerald-600 group-hover:text-emerald-800 transition-colors duration-500 ease-in-out">
-				LER ARTIGO →
+				LER ARTIGO <span className="font-geist">➔</span>
 			</span>
 		</Link>
 	);
