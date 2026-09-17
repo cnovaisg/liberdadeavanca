@@ -1,21 +1,14 @@
 import Link from "next/link";
-import { notFound } from "next/navigation";
-import blogService from "@/src/features/blog/services/blog.service";
+import type { PrunedBlogPostType } from "@/src/features/blog/services/blog.service";
 import Articleinfo from "../../sections/article-info/article-info";
 import Lines from "../../sections/lines/lines";
 import Paragraphs from "../../sections/paragraphs/paragraphs";
 
 type BlogPostPageProps = {
-	postId: string;
+	post: PrunedBlogPostType;
 };
 
-const BlogPost = async ({ postId }: BlogPostPageProps) => {
-	const post = await blogService.getPostById(postId);
-
-	if (!post) {
-		notFound();
-	}
-
+const BlogPost = ({ post }: BlogPostPageProps) => {
 	const content = post.value ?? [];
 	const lead = content[0]?.paragraph ?? "";
 	const body = content.slice(1);

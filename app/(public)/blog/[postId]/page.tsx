@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
-import { Suspense } from "react";
+import { notFound } from "next/navigation";
 import blogService from "@/src/features/blog/services/blog.service";
-import Spinner from "@/src/shared/ui/components/spinner/spinner";
 import BlogPost from "@/src/shared/ui/pages/blog/blog-post.page";
 
 type BlogPageProps = {
@@ -26,12 +25,13 @@ export async function generateMetadata({
 
 const IndividualBlogPage = async ({ params }: BlogPageProps) => {
 	const { postId } = await params;
+	const post = await blogService.getPostById(postId);
 
-	return (
-		<Suspense fallback={<Spinner />}>
-			<BlogPost postId={postId} />
-		</Suspense>
-	);
+	if (!post) {
+		notFound();
+	}
+
+	return <BlogPost post={post} />;
 };
 
 export default IndividualBlogPage;

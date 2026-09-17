@@ -1,5 +1,9 @@
 import Link from "next/link";
 
+export const metadata = {
+	title: "Artigo não encontrado",
+};
+
 const BlogPostNotFound = () => {
 	return (
 		<div className="flex flex-col w-full h-full shrink-0 overflow-y-auto">
