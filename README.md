@@ -20,6 +20,28 @@ You can start editing the page by modifying `app/page.tsx`. The page auto-update
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
+## Environment variables
+
+Set these in `.env.local` (local) and in the Vercel project (preview/production). Do not commit secrets.
+
+| Variable | Purpose |
+| --- | --- |
+| `CONTENTFUL_SPACE_ID` | Contentful space id |
+| `CONTENTFUL_API_BASE_URL` | CDA host, typically `https://cdn.contentful.com` |
+| `CONTENTFUL_API_ACCESS_TOKEN` | Contentful Content Delivery API token |
+| `REVALIDATE_SECRET` | Shared secret for the on-demand revalidation webhook |
+
+## Contentful publish webhook
+
+Blog pages cache Contentful fetches for 60 seconds and also accept on-demand revalidation.
+
+1. Add `REVALIDATE_SECRET` in Vercel (Production and Preview).
+2. In Contentful: **Settings → Webhooks → Add webhook**.
+3. URL: `https://<your-domain>/api/revalidate?secret=<REVALIDATE_SECRET>`  
+   Alternatively omit the query param and send header `x-revalidate-secret: <REVALIDATE_SECRET>`.
+4. Method: `POST`. Triggers: Entry **Publish**, **Unpublish**, and **Delete** (content type `blogPost`).
+5. On success the route revalidates `/blog` and, when the payload includes an entry id, `/blog/[postId]`.
+
 ## Learn More
 
 To learn more about Next.js, take a look at the following resources:

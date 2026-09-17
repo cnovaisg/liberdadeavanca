@@ -1,3 +1,9 @@
+import {
+  BLOG_CACHE_TAG,
+  BLOG_REVALIDATE_SECONDS,
+  blogPostCacheTag,
+} from "./blog.cache"
+
 export type BlogPostEntryType = {
   sys: {
     id: string
@@ -32,6 +38,7 @@ export type BlogPostEntryType = {
 }
 
 export type PrunedBlogPostType = {
+  id: string
   title: string
   subtitle?: string
   createdAt: string
@@ -69,7 +76,10 @@ class BlogService {
     url.searchParams.append("order", "-sys.createdAt")
     if (limit) url.searchParams.append("limit", limit.toString())
 
-    const response = await fetch(url.toString(), { headers: this.headers, next: { revalidate: 60 } })
+    const response = await fetch(url.toString(), {
+      headers: this.headers,
+      next: { revalidate: BLOG_REVALIDATE_SECONDS, tags: [BLOG_CACHE_TAG] },
+    })
     if (!response.ok) {
       throw new Error(`Contentful API error: ${response.status} ${response.statusText}`)
     }
@@ -96,9 +106,9 @@ class BlogService {
   private pruneBlogPost(post: BlogPostEntryType): PrunedBlogPostType {
     const { sys, fields, includes } = post
     const value: Array<{ paragraph: string }> =
-      fields.blogPostContent.content
-        .map((paragraph) =>
-          paragraph.content
+      fields.blogPostContent?.content
+        ?.map((paragraph) =>
+          (paragraph.content ?? [])
             .map((node) => node.value)
             .join("")
             .split(/\n+/)
@@ -106,11 +116,12 @@ class BlogService {
             .filter(Boolean)
             .map((currentParagraph) => ({ paragraph: currentParagraph }))
         )
-        .flat()
+        .flat() ?? []
 
     const authors = this.resolveAuthors({ ...post, includes })
 
     return {
+      id: sys.id,
       title: fields.title,
       subtitle: fields.subtitle,
       createdAt: sys.createdAt,
@@ -127,12 +138,34 @@ class BlogService {
   }
 
   async getPostById(id: string): Promise<PrunedBlogPostType | null> {
-    const url = `${this.compositeBaseUrl}/entries/${id}`
-    const response = await fetch(url, { headers: this.headers })
-    if (!response.ok) throw new Error(`Contentful API error: ${response.status} ${response.statusText}`)
+    const url = new URL(`${this.compositeBaseUrl}/entries`)
+    url.searchParams.append("content_type", "blogPost")
+    url.searchParams.append("sys.id", id)
+    url.searchParams.append("locale", "en-US")
+    url.searchParams.append("include", "2")
+    url.searchParams.append("limit", "1")
 
-    const data = (await response.json()) as BlogPostEntryType
-    return this.pruneBlogPost(data)
+    const response = await fetch(url.toString(), {
+      headers: this.headers,
+      next: {
+        revalidate: BLOG_REVALIDATE_SECONDS,
+        tags: [BLOG_CACHE_TAG, blogPostCacheTag(id)],
+      },
+    })
+
+    if (response.status === 404) return null
+    if (!response.ok) {
+      throw new Error(`Contentful API error: ${response.status} ${response.statusText}`)
+    }
+
+    const data = (await response.json()) as {
+      items: BlogPostEntryType[]
+      includes?: BlogPostEntryType["includes"]
+    }
+    const post = data.items?.[0]
+    if (!post) return null
+
+    return this.pruneBlogPost({ ...post, includes: data.includes })
   }
 
   async getAllBlogPosts(): Promise<PrunedBlogPostType[]> {

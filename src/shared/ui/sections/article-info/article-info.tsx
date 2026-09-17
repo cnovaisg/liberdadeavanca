@@ -27,7 +27,7 @@ const Articleinfo = ({ authors, createdAt, updatedAt }: ArticleinfoProps ) => {
 
 
 	return (
-		<div className="flex items-center space-x-5">
+		<div className="flex flex-wrap items-center gap-x-5 gap-y-2">
 			<Authors authors={authors ?? []} />
 			<LabelValue label="criado:" value={parsedPublicationDate.toLowerCase()} />
 			<LabelValue label="revisto:" value={parsedRevisionDate.toLowerCase()} />

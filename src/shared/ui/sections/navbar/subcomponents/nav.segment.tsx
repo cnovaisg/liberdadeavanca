@@ -15,7 +15,10 @@ const NavSegment = () => {
 	return (
 		<nav className="flex space-x-4 text-sm font-anton">
 			{NavbarEntries.map((entry, index) => {
-				const isCurrentPath = path === entry.href;
+				const isCurrentPath =
+					entry.href === "/"
+						? path === "/"
+						: path === entry.href || path.startsWith(`${entry.href}/`);
 				return (
 					<Link
 						key={index}
