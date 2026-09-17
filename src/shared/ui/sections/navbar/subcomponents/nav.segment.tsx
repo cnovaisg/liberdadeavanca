@@ -1,7 +1,7 @@
 "use client";
+import { motion } from "motion/react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { motion } from "motion/react";
 
 const NavbarEntries = [
 	{ label: "Início", href: "/" },
@@ -15,7 +15,10 @@ const NavSegment = () => {
 	return (
 		<nav className="flex space-x-4 text-sm font-anton">
 			{NavbarEntries.map((entry, index) => {
-				const isCurrentPath = path === entry.href;
+				const isCurrentPath =
+					entry.href === "/"
+						? path === "/"
+						: path === entry.href || path.startsWith(`${entry.href}/`);
 				return (
 					<Link
 						key={index}

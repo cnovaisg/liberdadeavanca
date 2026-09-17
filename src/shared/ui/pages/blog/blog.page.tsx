@@ -1,83 +1,46 @@
-import { Suspense, use } from "react";
 import blogService from "@/src/features/blog/services/blog.service";
-import LabelValue from "../../components/label-value/label-value";
-import Authors from "../../components/authors/authors";
-import Spinner from "../../components/spinner/spinner";
-import Paragraphs from "../../sections/paragraphs/paragraphs";
-import Lines from "../../sections/lines/lines";
+import PostSummary from "./subcomponents/post-summary";
 
-const blogPromise = blogService.getLatestBlogPosts();
+const Blog = async () => {
+	const posts = await blogService.getLatestBlogPosts(20);
+	const [featured, ...rest] = posts;
 
-const BlogContent = () => {
-	const blogs = use(blogPromise);
-
-	const post = blogs?.[0];
-	const authors = post?.authors;
-	const content = post?.value ?? [];
-
-	const lead = content?.[0]?.paragraph ?? "";
-	const body = content?.slice(1);
-
-	const parsedPublicationDate = new Date(
-		post?.createdAt as string,
-	).toLocaleDateString("pt-PT", {
-		day: "numeric",
-		month: "long",
-		year: "numeric",
-	});
-
-	const parsedRevisionDate = new Date(
-		post?.updatedAt as string,
-	).toLocaleDateString("pt-PT", {
-		day: "numeric",
-		month: "long",
-		year: "numeric",
-	});
+	if (!featured) {
+		return (
+			<div className="flex flex-col w-full h-full shrink-0 overflow-y-auto">
+				<div className="pt-8 flex flex-col space-y-3">
+					<h1 className="text-5xl text-emerald-900 tracking-wider font-anton">
+						BLOG
+					</h1>
+					<p className="font-geist text-zinc-700">
+						Ainda não há artigos publicados.
+					</p>
+				</div>
+			</div>
+		);
+	}
 
 	return (
 		<div className="flex flex-col w-full h-full shrink-0 overflow-y-auto">
-			<div className="pt-8 flex flex-col space-y-5 shrink-0">
-				<div className="flex flex-col space-y-1 font-anton">
-					<h1 className="text-5xl text-emerald-900 tracking-wider">
-						{post?.title?.toUpperCase()}
-					</h1>
+			<div className="pt-8 flex flex-col space-y-10 pb-10">
+				<PostSummary post={featured} featured />
 
-					<h2 className="text-2xl text-emerald-700 tracking-wide">
-						{post?.subtitle}
-					</h2>
-				</div>
-
-				<div className="flex items-center space-x-5">
-					<Authors authors={authors ?? []} />
-
-					<LabelValue
-						label="criado:"
-						value={parsedPublicationDate.toLowerCase()}
-					/>
-
-					<LabelValue
-						label="revisto:"
-						value={parsedRevisionDate.toLowerCase()}
-					/>
-				</div>
-			</div>
-
-			<div className="pt-8">
-				<Lines paragraph={lead} maxCharsPerLine={45} />
-			</div>
-
-			<div className="flex pt-4 pb-10">
-				<Paragraphs paragraphs={body} initialDelay={1} />
+				{rest.length > 0 ? (
+					<div className="flex flex-col space-y-8">
+						<h2 className="font-anton text-sm text-emerald-600 tracking-widest">
+							MAIS ARTIGOS
+						</h2>
+						<ul className="flex flex-col divide-y divide-zinc-100">
+							{rest.map((post) => (
+								<li key={post.id} className="py-8 first:pt-0">
+									<PostSummary post={post} />
+								</li>
+							))}
+						</ul>
+					</div>
+				) : null}
 			</div>
 		</div>
-	);
-};
-
-const Blog = () => {
-	return (
-		<Suspense fallback={<Spinner />}>
-			<BlogContent />
-		</Suspense>
 	);
 };
 
