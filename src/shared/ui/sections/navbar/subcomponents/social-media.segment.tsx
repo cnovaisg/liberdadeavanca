@@ -7,10 +7,10 @@ type LinkType = {
 	icon: ReactNode;
 };
 
-const X_ACCOUNT = process.env.SOCIAL_DATA_X_ACCOUNT;
+const X_PROFILE_HANDLE = "aLibAvancaPT";
 const MAIL = process.env.ACCOUNT_MAIL;
 
-const xUrl = `https://x.com/${X_ACCOUNT?.replace("@", "")}`;
+const xUrl = `https://x.com/${X_PROFILE_HANDLE}`;
 const mailUrl = `mailto:${MAIL}`;
 
 const LINKS: LinkType[] = [
