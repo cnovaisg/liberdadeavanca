@@ -5,13 +5,8 @@ This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-
 First, run the development server:
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
@@ -22,7 +17,7 @@ This project uses [`next/font`](https://nextjs.org/docs/app/building-your-applic
 
 ## Environment variables
 
-Set these in `.env.local` (local) and in the Vercel project (preview/production). Do not commit secrets.
+Set these in `.env.local` (copy from `.env.example`). Same keys in the Vercel project. Do not commit secrets.
 
 | Variable | Purpose |
 | --- | --- |
@@ -30,6 +25,10 @@ Set these in `.env.local` (local) and in the Vercel project (preview/production)
 | `CONTENTFUL_API_BASE_URL` | CDA host, typically `https://cdn.contentful.com` |
 | `CONTENTFUL_API_ACCESS_TOKEN` | Contentful Content Delivery API token |
 | `REVALIDATE_SECRET` | Shared secret for the on-demand revalidation webhook |
+| `ACCOUNT_MAIL` | Contact address for the mailto icon |
+| `SOCIAL_DATA_X_ACCOUNT` | X/Twitter handle for the homepage feed |
+| `SOCIAL_DATA_BASE_URL` | SocialData API host, typically `https://api.socialdata.tools` |
+| `SOCIAL_DATA_API_KEY` | SocialData API key |
 
 ## Contentful publish webhook
 
