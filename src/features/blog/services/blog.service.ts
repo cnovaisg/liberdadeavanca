@@ -1,4 +1,12 @@
-import { getContentfulConfig } from "@/shared/lib/contentful/config";
+import { resolveAuthors } from "@/shared/lib/contentful/authors";
+import { fetchContentfulEntries } from "@/shared/lib/contentful/client";
+import { parseRichTextField } from "@/shared/lib/contentful/rich-text";
+import type {
+	ContentfulAuthorField,
+	ContentfulIncludes,
+	ContentfulParagraph,
+	ContentfulSys,
+} from "@/shared/lib/contentful/types";
 import {
 	BLOG_CACHE_TAG,
 	BLOG_REVALIDATE_SECONDS,
@@ -6,12 +14,7 @@ import {
 } from "./blog.cache";
 
 export type BlogPostEntryType = {
-	sys: {
-		id: string;
-		createdAt: string;
-		updatedAt: string;
-		revision: number;
-	};
+	sys: ContentfulSys;
 	fields: {
 		title: string;
 		subtitle?: string;
@@ -25,17 +28,9 @@ export type BlogPostEntryType = {
 				content: Array<{ value: string }>;
 			}>;
 		};
-		authors?: Array<
-			| { sys: { id: string; type?: string; linkType?: string } }
-			| { name: string; role: string; imageUrl: string; contact?: string }
-		>;
+		authors?: ContentfulAuthorField[];
 	};
-	includes?: {
-		Entry?: Array<{
-			sys: { id: string };
-			fields: { name: string; role: string; imageUrl: string };
-		}>;
-	};
+	includes?: ContentfulIncludes;
 };
 
 export type PrunedBlogPostType = {
@@ -46,84 +41,12 @@ export type PrunedBlogPostType = {
 	updatedAt: string;
 	revision: number;
 	authors: Array<{ name: string; role: string; imageUrl: string }>;
-	value: Array<{ paragraph: string }>;
+	value: ContentfulParagraph[];
 };
 
 class BlogService {
-	private async fetchEntries(limit?: number): Promise<{
-		items: BlogPostEntryType[];
-		includes?: BlogPostEntryType["includes"];
-	}> {
-		const config = getContentfulConfig();
-		if (!config) {
-			return { items: [] };
-		}
-
-		const url = new URL(`${config.baseUrl}/entries`);
-		url.searchParams.append("content_type", "blogPost");
-		url.searchParams.append("locale", "en-US");
-		url.searchParams.append("include", "2");
-		url.searchParams.append("order", "-sys.createdAt");
-		if (limit) url.searchParams.append("limit", limit.toString());
-
-		const response = await fetch(url.toString(), {
-			headers: config.headers,
-			next: { revalidate: BLOG_REVALIDATE_SECONDS, tags: [BLOG_CACHE_TAG] },
-		});
-		if (!response.ok) {
-			throw new Error(
-				`Contentful API error: ${response.status} ${response.statusText}`,
-			);
-		}
-
-		return response.json() as Promise<{
-			items: BlogPostEntryType[];
-			includes?: BlogPostEntryType["includes"];
-		}>;
-	}
-
-	private resolveAuthors(
-		entry: BlogPostEntryType,
-	): Array<{ name: string; role: string; imageUrl: string }> {
-		const entries = entry.includes?.Entry ?? [];
-		if (!entry.fields.authors) return [];
-
-		return entry.fields.authors
-			.map((author) => {
-				if (
-					"sys" in author &&
-					author.sys?.type === "Link" &&
-					author.sys.linkType === "Entry"
-				) {
-					const authorEntry = entries.find(
-						(entry) => entry.sys.id === author.sys.id,
-					);
-					return authorEntry?.fields ?? null;
-				}
-				if ("name" in author && "role" in author && "imageUrl" in author)
-					return author;
-				return null;
-			})
-			.filter(
-				(author): author is { name: string; role: string; imageUrl: string } =>
-					author !== null,
-			);
-	}
-
 	private pruneBlogPost(post: BlogPostEntryType): PrunedBlogPostType {
 		const { sys, fields, includes } = post;
-		const value: Array<{ paragraph: string }> =
-			fields.blogPostContent?.content?.flatMap((paragraph) =>
-				(paragraph.content ?? [])
-					.map((node) => node.value)
-					.join("")
-					.split(/\n+/)
-					.map((currentParagraph) => currentParagraph.trim())
-					.filter(Boolean)
-					.map((currentParagraph) => ({ paragraph: currentParagraph })),
-			) ?? [];
-
-		const authors = this.resolveAuthors({ ...post, includes });
 
 		return {
 			id: sys.id,
@@ -132,53 +55,53 @@ class BlogService {
 			createdAt: sys.createdAt,
 			updatedAt: sys.updatedAt,
 			revision: sys.revision,
-			authors,
-			value,
+			authors: resolveAuthors(fields.authors, includes),
+			value: parseRichTextField(fields.blogPostContent),
 		};
+	}
+
+	private async fetchEntries(limit?: number) {
+		return fetchContentfulEntries<BlogPostEntryType>({
+			contentType: "blogPost",
+			searchParams: {
+				locale: "en-US",
+				include: "2",
+				order: "-sys.createdAt",
+				...(limit ? { limit: limit.toString() } : {}),
+			},
+			next: { revalidate: BLOG_REVALIDATE_SECONDS, tags: [BLOG_CACHE_TAG] },
+		});
 	}
 
 	async getLatestBlogPosts(
 		numberOfPosts: number = 3,
 	): Promise<PrunedBlogPostType[]> {
 		const data = await this.fetchEntries(numberOfPosts);
+		if (!data) return [];
+
 		return data.items.map((post) =>
 			this.pruneBlogPost({ ...post, includes: data.includes }),
 		);
 	}
 
 	async getPostById(id: string): Promise<PrunedBlogPostType | null> {
-		const config = getContentfulConfig();
-		if (!config) {
-			return null;
-		}
-
-		const url = new URL(`${config.baseUrl}/entries`);
-		url.searchParams.append("content_type", "blogPost");
-		url.searchParams.append("sys.id", id);
-		url.searchParams.append("locale", "en-US");
-		url.searchParams.append("include", "2");
-		url.searchParams.append("limit", "1");
-
-		const response = await fetch(url.toString(), {
-			headers: config.headers,
+		const data = await fetchContentfulEntries<BlogPostEntryType>({
+			contentType: "blogPost",
+			searchParams: {
+				"sys.id": id,
+				locale: "en-US",
+				include: "2",
+				limit: "1",
+			},
 			next: {
 				revalidate: BLOG_REVALIDATE_SECONDS,
 				tags: [BLOG_CACHE_TAG, blogPostCacheTag(id)],
 			},
 		});
 
-		if (response.status === 404) return null;
-		if (!response.ok) {
-			throw new Error(
-				`Contentful API error: ${response.status} ${response.statusText}`,
-			);
-		}
+		if (!data) return null;
 
-		const data = (await response.json()) as {
-			items: BlogPostEntryType[];
-			includes?: BlogPostEntryType["includes"];
-		};
-		const post = data.items?.[0];
+		const post = data.items[0];
 		if (!post) return null;
 
 		return this.pruneBlogPost({ ...post, includes: data.includes });
@@ -186,6 +109,8 @@ class BlogService {
 
 	async getAllBlogPosts(): Promise<PrunedBlogPostType[]> {
 		const data = await this.fetchEntries();
+		if (!data) return [];
+
 		return data.items.map((post) =>
 			this.pruneBlogPost({ ...post, includes: data.includes }),
 		);

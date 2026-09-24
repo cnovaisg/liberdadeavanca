@@ -1,117 +1,55 @@
-import { getContentfulConfig } from "@/shared/lib/contentful/config";
+import { resolveAuthors } from "@/shared/lib/contentful/authors";
+import { fetchContentfulEntries } from "@/shared/lib/contentful/client";
+import { parseRichTextField } from "@/shared/lib/contentful/rich-text";
+import type {
+	ContentfulAuthorField,
+	ContentfulIncludes,
+	ContentfulParagraph,
+	ContentfulSys,
+} from "@/shared/lib/contentful/types";
 
 export type ManifestoEntryType = {
-	sys: {
-		id: string;
-		createdAt: string;
-		updatedAt: string;
-		revision: number;
-	};
+	sys: ContentfulSys;
 	fields: {
 		title: string;
 		subtitle?: string;
-
 		intro?: {
 			content: Array<{
 				content: Array<{ value: string }>;
 			}>;
 		};
-
 		manifestoContent: {
 			content: Array<{
 				content: Array<{ value: string }>;
 			}>;
 		};
-
-		authors?: Array<
-			| { sys: { id: string; type?: string; linkType?: string } }
-			| { name: string; role: string; imageUrl: string }
-		>;
+		authors?: ContentfulAuthorField[];
 	};
-
-	includes?: {
-		Entry?: Array<{
-			sys: { id: string };
-			fields: { name: string; role: string; imageUrl: string };
-		}>;
-	};
+	includes?: ContentfulIncludes;
 };
 
 export type PrunedManifestoEntryType = {
 	createdAt: string;
 	updatedAt: string;
 	revision: number;
-
 	title: string;
 	subtitle?: string;
-
-	intro: Array<{ paragraph: string }>;
-	value: Array<{ paragraph: string }>;
-
+	intro: ContentfulParagraph[];
+	value: ContentfulParagraph[];
 	authors: Array<{ name: string; role: string; imageUrl: string }>;
 };
 
 const MANIFESTO_TTL = 0;
 
 class ManifestoService {
-	private resolveAuthors(entry: ManifestoEntryType) {
-		const linkedEntries = entry.includes?.Entry ?? [];
-		if (!entry.fields?.authors) return [];
-
-		const authors = entry.fields.authors
-			.map((author) => {
-				if (
-					"sys" in author &&
-					author.sys?.type === "Link" &&
-					author.sys.linkType === "Entry"
-				) {
-					const linked = linkedEntries.find((e) => e.sys.id === author.sys.id);
-					return linked?.fields ?? null;
-				}
-
-				if ("name" in author && "role" in author && "imageUrl" in author)
-					return author;
-
-				return null;
-			})
-			.filter(Boolean) as Array<{
-			name: string;
-			role: string;
-			imageUrl: string;
-		}>;
-
-		return authors;
-	}
-
-	private parseRichTextField(field?: {
-		content: Array<{ content: Array<{ value: string }> }>;
-	}) {
-		return (
-			field?.content?.flatMap((paragraph) =>
-				paragraph.content
-					.map((node) => node.value)
-					.join("")
-					.split(/\n+/)
-					.filter(Boolean)
-					.map((text) => ({ paragraph: text.trim() })),
-			) ?? []
-		);
-	}
-
-	private pruneManifesto(manifesto: ManifestoEntryType | null) {
+	private pruneManifesto(
+		manifesto: ManifestoEntryType | null,
+	): PrunedManifestoEntryType | null {
 		if (!manifesto) return null;
 
 		const { createdAt, updatedAt, revision } = manifesto.sys;
-		const {
-			title,
-			subtitle,
-			intro: rawIntro,
-			manifestoContent,
-		} = manifesto.fields;
-
-		const intro = this.parseRichTextField(rawIntro);
-		const value = this.parseRichTextField(manifestoContent);
-		const authors = this.resolveAuthors(manifesto);
+		const { title, subtitle, intro, manifestoContent, authors } =
+			manifesto.fields;
 
 		return {
 			createdAt,
@@ -119,39 +57,32 @@ class ManifestoService {
 			revision,
 			title,
 			subtitle,
-			intro,
-			value,
-			authors,
+			intro: parseRichTextField(intro),
+			value: parseRichTextField(manifestoContent),
+			authors: resolveAuthors(authors, manifesto.includes),
 		};
 	}
 
 	async getManifesto(): Promise<PrunedManifestoEntryType | null> {
-		const config = getContentfulConfig();
-		if (!config) {
-			return null;
-		}
-
-		const url = `${config.baseUrl}/entries?content_type=manifesto&limit=1&include=2`;
-		const response = await fetch(url, {
-			headers: config.headers,
+		const data = await fetchContentfulEntries<ManifestoEntryType>({
+			contentType: "manifesto",
+			searchParams: {
+				limit: "1",
+				include: "2",
+			},
 			next: { revalidate: MANIFESTO_TTL },
 			cache: "no-store",
 		});
 
-		if (!response.ok)
-			throw new Error(
-				`Contentful API error: ${response.status} ${response.statusText}`,
-			);
+		if (!data) return null;
 
-		const data = await response.json();
-		const manifesto = data.items?.[0];
+		const manifesto = data.items[0];
 		if (!manifesto) return null;
-		const prunedManifesto = this.pruneManifesto({
+
+		return this.pruneManifesto({
 			...manifesto,
 			includes: data.includes,
 		});
-
-		return prunedManifesto;
 	}
 }
 
