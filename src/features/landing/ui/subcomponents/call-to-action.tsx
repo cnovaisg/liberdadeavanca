@@ -1,7 +1,7 @@
 "use client";
 
-import Link from "next/link";
 import { motion } from "motion/react";
+import Link from "next/link";
 
 const CallToAction = () => {
 	return (
@@ -27,7 +27,10 @@ const CallToAction = () => {
 
 			<div className="h-px w-full bg-emerald-700 md:hidden" />
 
-			<Link href="/manifesto" className="text-emerald-900 italic flex items-center">
+			<Link
+				href="/manifesto"
+				className="text-emerald-900 italic flex items-center"
+			>
 				<span className="flex group space-x-1">
 					<span>Ver Manifesto</span>
 					<span>➔</span>

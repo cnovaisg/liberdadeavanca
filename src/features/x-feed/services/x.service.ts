@@ -1,3 +1,9 @@
+type SocialDataTweet = {
+	tweet_created_at?: string;
+	full_text?: string;
+	id_str?: string;
+};
+
 class SocialDataXService {
 	private getConfig() {
 		const user = process.env.SOCIAL_DATA_X_ACCOUNT?.replace(/^@/, "");
@@ -22,10 +28,7 @@ class SocialDataXService {
 		};
 	}
 
-	private async getJson(
-		url: string,
-		headers: { [key: string]: string },
-	) {
+	private async getJson(url: string, headers: { [key: string]: string }) {
 		const response = await fetch(url, {
 			method: "GET",
 			headers,
@@ -52,10 +55,7 @@ class SocialDataXService {
 			return search;
 		}
 
-		const profile = await this.getJson(
-			`${twitterRoot}/user/${user}`,
-			headers,
-		);
+		const profile = await this.getJson(`${twitterRoot}/user/${user}`, headers);
 		const userId = profile?.id_str ?? profile?.id;
 		if (!userId) {
 			console.error("X feed: no tweets from search and no user id");
@@ -79,9 +79,9 @@ class SocialDataXService {
 			);
 			const postprocessedResults =
 				results?.tweets
-					?.map((tweet: any) => {
-						const rawDate = tweet?.tweet_created_at;
-						const date = new Date(rawDate);
+					?.map((tweet: SocialDataTweet) => {
+						const rawDate = tweet.tweet_created_at;
+						const date = rawDate ? new Date(rawDate) : new Date(Number.NaN);
 						const hours = date.getHours().toString().padStart(2, "0");
 						const minutes = date.getMinutes().toString().padStart(2, "0");
 						const day = date.getDate().toString().padStart(2, "0");
@@ -93,8 +93,8 @@ class SocialDataXService {
 
 						return {
 							date: parsedDate,
-							text: tweet?.full_text,
-							id: tweet?.id_str,
+							text: tweet.full_text,
+							id: tweet.id_str,
 						};
 					})
 					.filter(

@@ -1,5 +1,5 @@
-import Notice from "./subcomponents/notice";
 import Legal from "./subcomponents/legal";
+import Notice from "./subcomponents/notice";
 
 const Footer = () => {
 	return (

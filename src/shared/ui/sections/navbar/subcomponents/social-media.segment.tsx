@@ -1,6 +1,6 @@
+import type { ReactNode } from "react";
 import MailIcon from "../../../icons/mail/mail.icon";
 import XIcon from "../../../icons/x/x.icon";
-import type { ReactNode } from "react";
 
 type LinkType = {
 	url: string;

@@ -1,7 +1,7 @@
 import Manifesto from "@/features/manifesto/ui/manifesto.page";
 
 const ManifestoPage = async () => {
-    return <Manifesto />
-}
+	return <Manifesto />;
+};
 
-export default ManifestoPage
+export default ManifestoPage;

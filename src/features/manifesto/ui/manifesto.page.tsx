@@ -1,9 +1,9 @@
 import { Suspense, use } from "react";
-import manifestoService from "../services/manifesto.service";
-import LabelValue from "@/shared/ui/components/label-value/label-value";
 import Authors from "@/shared/ui/components/authors/authors";
+import LabelValue from "@/shared/ui/components/label-value/label-value";
 import Spinner from "@/shared/ui/components/spinner/spinner";
 import Paragraphs from "@/shared/ui/sections/paragraphs/paragraphs.section";
+import manifestoService from "../services/manifesto.service";
 
 const MANIFESTO_LEAD =
 	"Este movimento de ideias propõe apoiar, dentro do ordenamento jurídico-constitucional português e possíveis alterações, um programa de redução do peso do Estado na economia e sociedade civil em 50% por cortes quer nos impostos quer na despesa incluindo por privatizações com o objectivo de atingir um crescimento económico de 50% numa década e propor uma reforma da segurança social da componente contributiva que assegure equilíbrio financeiro mas também uma alternativa para as novas gerações.";
@@ -30,14 +30,13 @@ const ManifestoContent = () => {
 	const authors = manifesto.authors;
 	const mainContent = manifesto.value ?? [];
 
-	const parsedPublicationDate = new Date(manifesto.createdAt).toLocaleDateString(
-		"pt-PT",
-		{
-			day: "numeric",
-			month: "long",
-			year: "numeric",
-		},
-	);
+	const parsedPublicationDate = new Date(
+		manifesto.createdAt,
+	).toLocaleDateString("pt-PT", {
+		day: "numeric",
+		month: "long",
+		year: "numeric",
+	});
 
 	const parsedRevisionDate = new Date(manifesto.updatedAt).toLocaleDateString(
 		"pt-PT",

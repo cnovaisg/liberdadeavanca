@@ -12,12 +12,13 @@ export type AuthorsProps = {
 };
 
 const generateParsedAuthorsNames = (authors?: AuthorType[]) => {
-  if (!authors || authors.length === 0) return "";
-  const numberOfAuthors = authors.length;
-  if (numberOfAuthors === 1) return authors[0].name;
-  if (numberOfAuthors === 2) return `${authors[0].name} e ${authors[1].name}`;
-  if (numberOfAuthors === 3) return `${authors[0].name}, ${authors[1].name} e ${authors[2].name}`;
-  return `${authors[0].name}, ${authors[1].name} e ${numberOfAuthors - 2} ${numberOfAuthors === 4 ? "outro" : "outros"}`;
+	if (!authors || authors.length === 0) return "";
+	const numberOfAuthors = authors.length;
+	if (numberOfAuthors === 1) return authors[0].name;
+	if (numberOfAuthors === 2) return `${authors[0].name} e ${authors[1].name}`;
+	if (numberOfAuthors === 3)
+		return `${authors[0].name}, ${authors[1].name} e ${authors[2].name}`;
+	return `${authors[0].name}, ${authors[1].name} e ${numberOfAuthors - 2} ${numberOfAuthors === 4 ? "outro" : "outros"}`;
 };
 
 const Authors = ({ authors }: AuthorsProps) => {

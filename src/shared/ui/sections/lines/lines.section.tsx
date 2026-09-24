@@ -1,5 +1,5 @@
 "use client";
-import { motion, type Variants, easeOut } from "motion/react";
+import { easeOut, motion, type Variants } from "motion/react";
 
 type LinesProps = {
 	paragraph: string;
