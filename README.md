@@ -22,13 +22,23 @@ Set these in `.env.local` (copy from `.env.example`). Same keys in the Vercel pr
 | Variable | Purpose |
 | --- | --- |
 | `CONTENTFUL_SPACE_ID` | Contentful space id |
-| `CONTENTFUL_API_BASE_URL` | CDA host, typically `https://cdn.contentful.com` |
-| `CONTENTFUL_API_ACCESS_TOKEN` | Contentful Content Delivery API token |
+| `CONTENTFUL_API_BASE_URL` | Delivery host only: `https://cdn.contentful.com` (or Preview: `https://preview.contentful.com`). Never `api.contentful.com` |
+| `CONTENTFUL_API_ACCESS_TOKEN` | Contentful **Content Delivery** (or Preview) token — not Management (CMA) |
 | `REVALIDATE_SECRET` | Shared secret for the on-demand revalidation webhook |
 | `ACCOUNT_MAIL` | Contact address for the mailto icon |
 | `SOCIAL_DATA_X_ACCOUNT` | X/Twitter handle for the homepage feed |
 | `SOCIAL_DATA_BASE_URL` | SocialData API host, typically `https://api.socialdata.tools` |
 | `SOCIAL_DATA_API_KEY` | SocialData API key |
+
+### Rotating secrets
+
+If a secret may have leaked (chat, logs, old webhook URL with `?secret=`), rotate it:
+
+1. **`REVALIDATE_SECRET`** — generate a new random value, update Vercel (Production + Preview), update the Contentful webhook header, remove any old query-string secret from the webhook URL.
+2. **`CONTENTFUL_API_ACCESS_TOKEN`** — in Contentful create a new Delivery API token, put it in Vercel/`.env.local`, revoke the old token.
+3. **`SOCIAL_DATA_API_KEY`** — regenerate in SocialData, update Vercel/`.env.local`, revoke the old key.
+
+Redeploy after changing Vercel env vars.
 
 ## Contentful publish webhook
 

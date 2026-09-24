@@ -19,13 +19,41 @@ const optionalEmail = z.preprocess(
 	z.string().email().optional(),
 );
 
+/** Read-only Contentful hosts — never the Management API (`api.contentful.com`). */
+export const CONTENTFUL_READ_HOSTS = new Set([
+	"cdn.contentful.com",
+	"preview.contentful.com",
+]);
+
+const optionalContentfulBaseUrl = z.preprocess(
+	emptyToUndefined,
+	z
+		.string()
+		.url()
+		.refine(
+			(value) => {
+				try {
+					return CONTENTFUL_READ_HOSTS.has(new URL(value).hostname);
+				} catch {
+					return false;
+				}
+			},
+			{
+				message:
+					"Must be Contentful Delivery (cdn.contentful.com) or Preview (preview.contentful.com), not Management (api.contentful.com)",
+			},
+		)
+		.optional(),
+);
+
 /**
  * All secrets/config are optional so local/CI builds work without `.env.local`.
  * When a value *is* present, Zod still validates shape (URL, email, non-empty).
  */
 const envSchema = z.object({
 	CONTENTFUL_SPACE_ID: optionalString,
-	CONTENTFUL_API_BASE_URL: optionalUrl,
+	CONTENTFUL_API_BASE_URL: optionalContentfulBaseUrl,
+	/** Content Delivery API (CDA) or Preview token — never a Management (CMA) token. */
 	CONTENTFUL_API_ACCESS_TOKEN: optionalString,
 	REVALIDATE_SECRET: optionalString,
 	ACCOUNT_MAIL: optionalEmail,
@@ -68,6 +96,13 @@ export function getContentfulCredentials() {
 
 	if (!spaceId || !apiBaseUrl || !accessToken) {
 		return null;
+	}
+
+	const hostname = new URL(apiBaseUrl).hostname;
+	if (!CONTENTFUL_READ_HOSTS.has(hostname)) {
+		throw new Error(
+			`Refusing Contentful host "${hostname}". Use Delivery/Preview only.`,
+		);
 	}
 
 	return { spaceId, apiBaseUrl, accessToken };
