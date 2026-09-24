@@ -1,31 +1,34 @@
 class SocialDataXService {
-	private readonly user: string;
-	private readonly twitterRoot: string;
-	private readonly headers: { [key: string]: string };
+	private getConfig() {
+		const user = process.env.SOCIAL_DATA_X_ACCOUNT?.replace(/^@/, "");
+		const apiBaseUrl = process.env.SOCIAL_DATA_BASE_URL?.replace(/\/$/, "");
+		const token = process.env.SOCIAL_DATA_API_KEY;
 
-	constructor() {
-		const USER = process.env.SOCIAL_DATA_X_ACCOUNT?.replace(/^@/, "");
-		const API_BASE_URL = process.env.SOCIAL_DATA_BASE_URL?.replace(/\/$/, "");
-		const TOKEN = process.env.SOCIAL_DATA_API_KEY;
-
-		if (!USER || !API_BASE_URL || !TOKEN) {
-			throw new Error("Missing SocialData X environment variables");
+		if (!user || !apiBaseUrl || !token) {
+			return null;
 		}
 
-		this.user = USER;
-		this.twitterRoot = API_BASE_URL.endsWith("/twitter")
-			? API_BASE_URL
-			: `${API_BASE_URL}/twitter`;
-		this.headers = {
-			Authorization: `Bearer ${TOKEN}`,
-			Accept: "application/json",
+		const twitterRoot = apiBaseUrl.endsWith("/twitter")
+			? apiBaseUrl
+			: `${apiBaseUrl}/twitter`;
+
+		return {
+			user,
+			twitterRoot,
+			headers: {
+				Authorization: `Bearer ${token}`,
+				Accept: "application/json",
+			},
 		};
 	}
 
-	private async getJson(url: string) {
+	private async getJson(
+		url: string,
+		headers: { [key: string]: string },
+	) {
 		const response = await fetch(url, {
 			method: "GET",
-			headers: this.headers,
+			headers,
 			cache: "no-store",
 		});
 		const data = await response.json();
@@ -35,17 +38,23 @@ class SocialDataXService {
 		return data;
 	}
 
-	private async getXfeed() {
-		const query = encodeURIComponent(`from:${this.user}`);
+	private async getXfeed(
+		user: string,
+		twitterRoot: string,
+		headers: { [key: string]: string },
+	) {
+		const query = encodeURIComponent(`from:${user}`);
 		const search = await this.getJson(
-			`${this.twitterRoot}/search?query=${query}&type=Latest`,
+			`${twitterRoot}/search?query=${query}&type=Latest`,
+			headers,
 		);
 		if (Array.isArray(search?.tweets) && search.tweets.length > 0) {
 			return search;
 		}
 
 		const profile = await this.getJson(
-			`${this.twitterRoot}/user/${this.user}`,
+			`${twitterRoot}/user/${user}`,
+			headers,
 		);
 		const userId = profile?.id_str ?? profile?.id;
 		if (!userId) {
@@ -53,12 +62,21 @@ class SocialDataXService {
 			return { tweets: [] };
 		}
 
-		return this.getJson(`${this.twitterRoot}/user/${userId}/tweets`);
+		return this.getJson(`${twitterRoot}/user/${userId}/tweets`, headers);
 	}
 
 	async getPostprocessedXfeed() {
+		const config = this.getConfig();
+		if (!config) {
+			return [];
+		}
+
 		try {
-			const results = await this.getXfeed();
+			const results = await this.getXfeed(
+				config.user,
+				config.twitterRoot,
+				config.headers,
+			);
 			const postprocessedResults =
 				results?.tweets
 					?.map((tweet: any) => {
@@ -79,12 +97,13 @@ class SocialDataXService {
 							id: tweet?.id_str,
 						};
 					})
-					.filter((tweet: { text?: string; id?: string }) => tweet.text && tweet.id) ??
-				[];
+					.filter(
+						(tweet: { text?: string; id?: string }) => tweet.text && tweet.id,
+					) ?? [];
 			return postprocessedResults;
 		} catch (error) {
 			console.error("Error postprocessing X feed:", error);
-			throw error;
+			return [];
 		}
 	}
 }

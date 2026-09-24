@@ -1,4 +1,4 @@
-//export const dynamic = "force-dynamic";
+import { getContentfulConfig } from "@/shared/lib/contentful/config";
 
 export type ManifestoEntryType = {
 	sys: {
@@ -51,29 +51,9 @@ export type PrunedManifestoEntryType = {
 	authors: Array<{ name: string; role: string; imageUrl: string }>;
 };
 
-const ONE_DAY = 60 * 60 * 24;
 const MANIFESTO_TTL = 0;
 
 class ManifestoService {
-	private baseUrl: string;
-	private headers: HeadersInit;
-
-	constructor() {
-		const SPACE_ID = process.env.CONTENTFUL_SPACE_ID;
-		const API_BASE_URL = process.env.CONTENTFUL_API_BASE_URL;
-		const TOKEN = process.env.CONTENTFUL_API_ACCESS_TOKEN;
-
-		if (!SPACE_ID || !API_BASE_URL || !TOKEN) {
-			throw new Error("Missing Contentful environment variables");
-		}
-
-		this.baseUrl = `${API_BASE_URL}/spaces/${SPACE_ID}/environments/master`;
-		this.headers = {
-			Authorization: `Bearer ${TOKEN}`,
-			"Content-Type": "application/json",
-		};
-	}
-
 	private resolveAuthors(entry: ManifestoEntryType) {
 		const linkedEntries = entry.includes?.Entry ?? [];
 		if (!entry.fields?.authors) return [];
@@ -146,9 +126,14 @@ class ManifestoService {
 	}
 
 	async getManifesto(): Promise<PrunedManifestoEntryType | null> {
-		const url = `${this.baseUrl}/entries?content_type=manifesto&limit=1&include=2`;
+		const config = getContentfulConfig();
+		if (!config) {
+			return null;
+		}
+
+		const url = `${config.baseUrl}/entries?content_type=manifesto&limit=1&include=2`;
 		const response = await fetch(url, {
-			headers: this.headers,
+			headers: config.headers,
 			next: { revalidate: MANIFESTO_TTL },
 			cache: "no-store",
 		});

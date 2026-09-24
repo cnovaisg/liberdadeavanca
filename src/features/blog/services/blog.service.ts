@@ -1,3 +1,4 @@
+import { getContentfulConfig } from "@/shared/lib/contentful/config";
 import {
 	BLOG_CACHE_TAG,
 	BLOG_REVALIDATE_SECONDS,
@@ -49,34 +50,16 @@ export type PrunedBlogPostType = {
 };
 
 class BlogService {
-	private compositeBaseUrl: string;
-	private headers: HeadersInit;
-
-	constructor() {
-		const CONTENTFUL_SPACE_ID = process.env.CONTENTFUL_SPACE_ID;
-		const CONTENTFUL_API_BASE_URL = process.env.CONTENTFUL_API_BASE_URL;
-		const CONTENTFUL_API_ACCESS_TOKEN = process.env.CONTENTFUL_API_ACCESS_TOKEN;
-
-		if (
-			!CONTENTFUL_SPACE_ID ||
-			!CONTENTFUL_API_BASE_URL ||
-			!CONTENTFUL_API_ACCESS_TOKEN
-		) {
-			throw new Error("Missing Contentful environment variables");
-		}
-
-		this.compositeBaseUrl = `${CONTENTFUL_API_BASE_URL}/spaces/${CONTENTFUL_SPACE_ID}/environments/master`;
-		this.headers = {
-			Authorization: `Bearer ${CONTENTFUL_API_ACCESS_TOKEN}`,
-			"Content-Type": "application/json",
-		};
-	}
-
 	private async fetchEntries(limit?: number): Promise<{
 		items: BlogPostEntryType[];
 		includes?: BlogPostEntryType["includes"];
 	}> {
-		const url = new URL(`${this.compositeBaseUrl}/entries`);
+		const config = getContentfulConfig();
+		if (!config) {
+			return { items: [] };
+		}
+
+		const url = new URL(`${config.baseUrl}/entries`);
 		url.searchParams.append("content_type", "blogPost");
 		url.searchParams.append("locale", "en-US");
 		url.searchParams.append("include", "2");
@@ -84,7 +67,7 @@ class BlogService {
 		if (limit) url.searchParams.append("limit", limit.toString());
 
 		const response = await fetch(url.toString(), {
-			headers: this.headers,
+			headers: config.headers,
 			next: { revalidate: BLOG_REVALIDATE_SECONDS, tags: [BLOG_CACHE_TAG] },
 		});
 		if (!response.ok) {
@@ -164,7 +147,12 @@ class BlogService {
 	}
 
 	async getPostById(id: string): Promise<PrunedBlogPostType | null> {
-		const url = new URL(`${this.compositeBaseUrl}/entries`);
+		const config = getContentfulConfig();
+		if (!config) {
+			return null;
+		}
+
+		const url = new URL(`${config.baseUrl}/entries`);
 		url.searchParams.append("content_type", "blogPost");
 		url.searchParams.append("sys.id", id);
 		url.searchParams.append("locale", "en-US");
@@ -172,7 +160,7 @@ class BlogService {
 		url.searchParams.append("limit", "1");
 
 		const response = await fetch(url.toString(), {
-			headers: this.headers,
+			headers: config.headers,
 			next: {
 				revalidate: BLOG_REVALIDATE_SECONDS,
 				tags: [BLOG_CACHE_TAG, blogPostCacheTag(id)],
