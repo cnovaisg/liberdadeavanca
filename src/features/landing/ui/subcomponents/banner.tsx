@@ -1,4 +1,4 @@
-import CallToAction from "./Call-to-action";
+import CallToAction from "./call-to-action";
 import XPostsFeed from "./x-posts-feed";
 import Title from "./title";
 

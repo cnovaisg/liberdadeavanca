@@ -1,8 +1,8 @@
 import Link from "next/link";
 import type { PrunedBlogPostType } from "../services/blog.service";
-import Articleinfo from "@/shared/ui/sections/article-info/article-info";
-import Lines from "@/shared/ui/sections/lines/lines";
-import Paragraphs from "@/shared/ui/sections/paragraphs/paragraphs";
+import ArticleInfo from "@/shared/ui/sections/article-info/article-info.section";
+import Lines from "@/shared/ui/sections/lines/lines.section";
+import Paragraphs from "@/shared/ui/sections/paragraphs/paragraphs.section";
 
 type BlogPostPageProps = {
 	post: PrunedBlogPostType;
@@ -35,7 +35,7 @@ const BlogPost = ({ post }: BlogPostPageProps) => {
 					) : null}
 				</div>
 
-				<Articleinfo
+				<ArticleInfo
 					authors={post.authors}
 					createdAt={post.createdAt}
 					updatedAt={post.updatedAt}
