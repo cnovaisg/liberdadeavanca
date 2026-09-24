@@ -1,9 +1,9 @@
 import { Suspense, use } from "react";
+import Authors from "@/shared/ui/components/authors/authors";
+import LabelValue from "@/shared/ui/components/label-value/label-value";
+import Spinner from "@/shared/ui/components/spinner/spinner";
+import Paragraphs from "@/shared/ui/sections/paragraphs/paragraphs.section";
 import manifestoService from "../services/manifesto.service";
-import LabelValue from "@/src/shared/ui/components/label-value/label-value";
-import Authors from "@/src/shared/ui/components/authors/authors";
-import Spinner from "@/src/shared/ui/components/spinner/spinner";
-import Paragraphs from "@/src/shared/ui/sections/paragraphs/paragraphs";
 
 const MANIFESTO_LEAD =
 	"Este movimento de ideias propõe apoiar, dentro do ordenamento jurídico-constitucional português e possíveis alterações, um programa de redução do peso do Estado na economia e sociedade civil em 50% por cortes quer nos impostos quer na despesa incluindo por privatizações com o objectivo de atingir um crescimento económico de 50% numa década e propor uma reforma da segurança social da componente contributiva que assegure equilíbrio financeiro mas também uma alternativa para as novas gerações.";
@@ -11,34 +11,51 @@ const MANIFESTO_LEAD =
 const manifestoPromise = manifestoService.getManifesto();
 const ManifestoContent = () => {
 	const manifesto = use(manifestoPromise);
-	const authors = manifesto?.authors;
-	const mainContent = manifesto?.value;
+
+	if (!manifesto) {
+		return (
+			<div className="flex flex-col w-full h-full shrink-0 overflow-y-auto">
+				<div className="pt-8 flex flex-col space-y-3">
+					<h1 className="text-5xl text-emerald-900 tracking-wider font-anton">
+						MANIFESTO
+					</h1>
+					<p className="font-geist text-zinc-700">
+						O manifesto ainda não está disponível.
+					</p>
+				</div>
+			</div>
+		);
+	}
+
+	const authors = manifesto.authors;
+	const mainContent = manifesto.value ?? [];
 
 	const parsedPublicationDate = new Date(
-		manifesto?.createdAt as string,
+		manifesto.createdAt,
 	).toLocaleDateString("pt-PT", {
 		day: "numeric",
 		month: "long",
 		year: "numeric",
 	});
 
-	const parsedRevisionDate = new Date(
-		manifesto?.updatedAt as string,
-	).toLocaleDateString("pt-PT", {
-		day: "numeric",
-		month: "long",
-		year: "numeric",
-	});
+	const parsedRevisionDate = new Date(manifesto.updatedAt).toLocaleDateString(
+		"pt-PT",
+		{
+			day: "numeric",
+			month: "long",
+			year: "numeric",
+		},
+	);
 
 	return (
 		<div className="flex flex-col w-full h-full shrink-0 overflow-y-auto">
 			<div className="pt-8 flex flex-col space-y-5 shrink-0">
 				<div className="flex flex-col space-y-1 font-anton">
 					<h1 className="text-5xl text-emerald-900 tracking-wider">
-						{manifesto?.title?.toUpperCase()}
+						{manifesto.title?.toUpperCase()}
 					</h1>
 					<h2 className="text-2xl text-emerald-700 tracking-wide">
-						{manifesto?.subtitle}
+						{manifesto.subtitle}
 					</h2>
 				</div>
 
@@ -62,7 +79,7 @@ const ManifestoContent = () => {
 				<Paragraphs paragraphs={[{ paragraph: MANIFESTO_LEAD }]} />
 			</div>
 			<div className="flex pt-4 pb-10">
-				<Paragraphs paragraphs={mainContent!} initialDelay={1} />
+				<Paragraphs paragraphs={mainContent} initialDelay={1} />
 			</div>
 		</div>
 	);

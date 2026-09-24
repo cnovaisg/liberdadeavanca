@@ -1,6 +1,6 @@
 import Link from "next/link";
-import type { PrunedBlogPostType } from "../../services/blog.service";
-import Articleinfo from "@/src/shared/ui/sections/article-info/article-info";
+import ArticleInfo from "@/shared/ui/sections/article-info/article-info.section";
+import type { PrunedBlogPostType } from "../../types";
 
 type PostSummaryProps = {
 	post: PrunedBlogPostType;
@@ -32,7 +32,7 @@ const PostSummary = ({ post, featured = false }: PostSummaryProps) => {
 				) : null}
 			</div>
 
-			<Articleinfo
+			<ArticleInfo
 				authors={post.authors}
 				createdAt={post.createdAt}
 				updatedAt={post.updatedAt}

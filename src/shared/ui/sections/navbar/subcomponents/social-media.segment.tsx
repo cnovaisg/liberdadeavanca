@@ -1,6 +1,7 @@
-import MailCIon from "../../../icons/mail/mail.icon";
-import Xicon from "../../../icons/x/x.icon";
 import type { ReactNode } from "react";
+import { env } from "@/shared/lib/env";
+import MailIcon from "../../../icons/mail/mail.icon";
+import XIcon from "../../../icons/x/x.icon";
 
 type LinkType = {
 	url: string;
@@ -8,14 +9,14 @@ type LinkType = {
 };
 
 const X_PROFILE_HANDLE = "aLibAvancaPT";
-const MAIL = process.env.ACCOUNT_MAIL;
+const MAIL = env.ACCOUNT_MAIL;
 
 const xUrl = `https://x.com/${X_PROFILE_HANDLE}`;
 const mailUrl = `mailto:${MAIL}`;
 
 const LINKS: LinkType[] = [
-	{ url: xUrl, icon: <Xicon scale={0.75} /> },
-	{ url: mailUrl, icon: <MailCIon scale={0.75} /> },
+	{ url: xUrl, icon: <XIcon scale={0.75} /> },
+	{ url: mailUrl, icon: <MailIcon scale={0.75} /> },
 ];
 
 const SocialMediaSegment = () => {
@@ -26,7 +27,7 @@ const SocialMediaSegment = () => {
 
 				return (
 					<a
-						className="flex justify-center items-center rounded p-0.5 hover:bg-emerald-100 duration-200 ease-out transition-colours"
+						className="flex justify-center items-center rounded p-0.5 hover:bg-emerald-100 duration-200 ease-out transition-colors"
 						key={`icon_${index}`}
 						href={link.url}
 					>

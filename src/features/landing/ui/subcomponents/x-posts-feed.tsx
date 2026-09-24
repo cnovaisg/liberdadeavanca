@@ -1,18 +1,15 @@
 import { Suspense, use } from "react";
-import socialDataXService from "@/src/features/x-feed/services/x.service";
+import socialDataXService from "@/features/x-feed/services/x.service";
+import { env } from "@/shared/lib/env";
+import Spinner from "@/shared/ui/components/spinner/spinner";
 import PostSlider from "./post-slider";
-import Spinner from "@/src/shared/ui/components/spinner/spinner";
+
 const socialDataPromise = socialDataXService.getPostprocessedXfeed();
 
 const XFeedContent = () => {
 	const results = use(socialDataPromise);
 
-	return (
-		<PostSlider
-			user={process.env.SOCIAL_DATA_X_ACCOUNT as string}
-			items={results}
-		/>
-	);
+	return <PostSlider user={env.SOCIAL_DATA_X_ACCOUNT ?? ""} items={results} />;
 };
 
 const XPostsFeed = () => {

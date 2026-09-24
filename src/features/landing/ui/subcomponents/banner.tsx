@@ -1,6 +1,6 @@
-import CallToAction from "./Call-to-action";
-import XPostsFeed from "./x-posts-feed";
+import CallToAction from "./call-to-action";
 import Title from "./title";
+import XPostsFeed from "./x-posts-feed";
 
 const Banner = () => {
 	return (

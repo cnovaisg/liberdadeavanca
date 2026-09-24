@@ -1,32 +1,34 @@
 {
-  "name": "liberdadeavanca",
-  "version": "0.1.0",
-  "private": true,
-  "scripts": {
-    "dev": "next dev --turbopack",
-    "build": "next build",
-    "start": "next start",
-    "lint": "next lint"
-  },
-  "dependencies": {
-    "motion": "^12.23.12",
-    "next": "16.2.6",
-    "react": "19.2.6",
-    "react-dom": "19.2.6"
-  },
-  "devDependencies": {
-    "@biomejs/biome": "^2.4.6",
-    "@tailwindcss/postcss": "^4",
-    "@tailwindcss/typography": "^0.5.19",
-    "@types/node": "^20",
-    "@types/react": "19.2.14",
-    "@types/react-dom": "19.2.3",
-    "prettier": "^3.5.3",
-    "tailwindcss": "^4",
-    "typescript": "^5"
-  },
-  "overrides": {
-    "@types/react": "19.2.14",
-    "@types/react-dom": "19.2.3"
-  }
+	"name": "liberdadeavanca",
+	"version": "0.1.0",
+	"private": true,
+	"scripts": {
+		"dev": "next dev --turbopack",
+		"build": "next build",
+		"start": "next start",
+		"lint": "biome check .",
+		"lint:fix": "biome check --write .",
+		"format": "biome format --write ."
+	},
+	"dependencies": {
+		"motion": "^12.23.12",
+		"next": "16.2.6",
+		"react": "19.2.6",
+		"react-dom": "19.2.6",
+		"zod": "^4.6.5"
+	},
+	"devDependencies": {
+		"@biomejs/biome": "^2.4.6",
+		"@tailwindcss/postcss": "^4",
+		"@tailwindcss/typography": "^0.5.19",
+		"@types/node": "^20",
+		"@types/react": "19.2.14",
+		"@types/react-dom": "19.2.3",
+		"tailwindcss": "^4",
+		"typescript": "^5"
+	},
+	"overrides": {
+		"@types/react": "19.2.14",
+		"@types/react-dom": "19.2.3"
+	}
 }

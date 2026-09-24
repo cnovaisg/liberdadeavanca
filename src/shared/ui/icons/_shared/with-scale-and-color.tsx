@@ -8,13 +8,13 @@ export const WithScaleAndColor = (pathD: string) => {
 		const size = 24 * scale;
 
 		return (
-			// biome-ignore lint/a11y/noSvgWithoutTitle: <explanation>
 			<svg
 				xmlns="http://www.w3.org/2000/svg"
 				width={size}
 				height={size}
 				viewBox="0 -960 960 960"
 				fill={color}
+				aria-hidden="true"
 			>
 				<path d={pathD} />
 			</svg>

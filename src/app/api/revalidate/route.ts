@@ -4,7 +4,8 @@ import { NextResponse } from "next/server";
 import {
 	BLOG_CACHE_TAG,
 	blogPostCacheTag,
-} from "@/src/features/blog/services/blog.cache";
+} from "@/features/blog/services/blog.cache";
+import { env } from "@/shared/lib/env";
 
 /**
  * On-demand cache revalidation for Contentful publishes.
@@ -12,13 +13,15 @@ import {
  * Env: REVALIDATE_SECRET (Vercel project env — do not commit the value).
  *
  * Contentful webhook (Settings → Webhooks):
- *   URL:  https://<host>/api/revalidate?secret=<REVALIDATE_SECRET>
- *   or header `x-revalidate-secret: <REVALIDATE_SECRET>` / `Authorization: Bearer <REVALIDATE_SECRET>`
- *   Method: POST
+ *   URL:  https://<host>/api/revalidate
+ *   Headers: `x-revalidate-secret: <REVALIDATE_SECRET>`
+ *            (or `Authorization: Bearer <REVALIDATE_SECRET>`)
+ *   Method: POST only
  *   Triggers: Entry publish, unpublish, delete (content type blogPost)
  *
- * The handler always refreshes `/blog`. When the webhook body or query
- * includes an entry id, it also refreshes `/blog/[postId]` for that entry.
+ * The secret must not be passed in the query string (avoids log/referrer leaks).
+ * On success the route revalidates `/blog` and, when the payload includes a
+ * valid entry id, `/blog/[postId]` for that entry.
  */
 
 type ContentfulWebhookBody = {
@@ -26,6 +29,9 @@ type ContentfulWebhookBody = {
 	entryId?: unknown;
 	entityId?: unknown;
 };
+
+/** Contentful entry ids are alphanumeric (optionally with `_` / `-`). */
+const ENTRY_ID_PATTERN = /^[a-zA-Z0-9_-]{1,64}$/;
 
 const unauthorized = () =>
 	NextResponse.json(
@@ -40,34 +46,34 @@ const secretsMatch = (provided: string, expected: string) => {
 };
 
 const readProvidedSecret = (request: Request) => {
-	const url = new URL(request.url);
-	const fromQuery = url.searchParams.get("secret");
-	const fromHeader = request.headers.get("x-revalidate-secret");
-	const authorization = request.headers.get("authorization");
-	const fromBearer = authorization?.toLowerCase().startsWith("bearer ")
-		? authorization.slice(7).trim()
-		: null;
+	const fromHeader = request.headers.get("x-revalidate-secret")?.trim();
+	if (fromHeader) return fromHeader;
 
-	return fromQuery || fromHeader || fromBearer;
+	const authorization = request.headers.get("authorization");
+	if (authorization?.toLowerCase().startsWith("bearer ")) {
+		const token = authorization.slice(7).trim();
+		return token || null;
+	}
+
+	return null;
 };
 
-const asId = (value: unknown): string | undefined =>
-	typeof value === "string" && value.trim() ? value.trim() : undefined;
+const asEntryId = (value: unknown): string | undefined => {
+	if (typeof value !== "string") return undefined;
+	const id = value.trim();
+	return ENTRY_ID_PATTERN.test(id) ? id : undefined;
+};
 
 const extractEntryId = async (
 	request: Request,
 ): Promise<string | undefined> => {
-	const url = new URL(request.url);
-	const fromQuery =
-		url.searchParams.get("id") ??
-		url.searchParams.get("entryId") ??
-		url.searchParams.get("postId");
-	if (fromQuery) return fromQuery;
-	if (request.method === "GET") return undefined;
-
 	try {
 		const body = (await request.json()) as ContentfulWebhookBody;
-		return asId(body?.sys?.id) ?? asId(body?.entryId) ?? asId(body?.entityId);
+		return (
+			asEntryId(body?.sys?.id) ??
+			asEntryId(body?.entryId) ??
+			asEntryId(body?.entityId)
+		);
 	} catch {
 		return undefined;
 	}
@@ -83,8 +89,8 @@ const revalidateBlog = (entryId?: string) => {
 	}
 };
 
-const handleRevalidate = async (request: Request) => {
-	const expected = process.env.REVALIDATE_SECRET;
+export async function POST(request: Request) {
+	const expected = env.REVALIDATE_SECRET;
 	if (!expected) {
 		return NextResponse.json(
 			{ revalidated: false, message: "REVALIDATE_SECRET is not configured" },
@@ -105,12 +111,4 @@ const handleRevalidate = async (request: Request) => {
 		now: Date.now(),
 		paths: entryId ? ["/blog", `/blog/${entryId}`] : ["/blog"],
 	});
-};
-
-export async function POST(request: Request) {
-	return handleRevalidate(request);
-}
-
-export async function GET(request: Request) {
-	return handleRevalidate(request);
 }

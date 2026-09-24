@@ -11,7 +11,7 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+You can start editing the page by modifying `src/app/page.tsx`. The page auto-updates as you edit the file.
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
@@ -22,13 +22,23 @@ Set these in `.env.local` (copy from `.env.example`). Same keys in the Vercel pr
 | Variable | Purpose |
 | --- | --- |
 | `CONTENTFUL_SPACE_ID` | Contentful space id |
-| `CONTENTFUL_API_BASE_URL` | CDA host, typically `https://cdn.contentful.com` |
-| `CONTENTFUL_API_ACCESS_TOKEN` | Contentful Content Delivery API token |
+| `CONTENTFUL_API_BASE_URL` | Delivery host only: `https://cdn.contentful.com` (or Preview: `https://preview.contentful.com`). Never `api.contentful.com` |
+| `CONTENTFUL_API_ACCESS_TOKEN` | Contentful **Content Delivery** (or Preview) token — not Management (CMA) |
 | `REVALIDATE_SECRET` | Shared secret for the on-demand revalidation webhook |
 | `ACCOUNT_MAIL` | Contact address for the mailto icon |
 | `SOCIAL_DATA_X_ACCOUNT` | X/Twitter handle for the homepage feed |
 | `SOCIAL_DATA_BASE_URL` | SocialData API host, typically `https://api.socialdata.tools` |
 | `SOCIAL_DATA_API_KEY` | SocialData API key |
+
+### Rotating secrets
+
+If a secret may have leaked (chat, logs, old webhook URL with `?secret=`), rotate it:
+
+1. **`REVALIDATE_SECRET`** — generate a new random value, update Vercel (Production + Preview), update the Contentful webhook header, remove any old query-string secret from the webhook URL.
+2. **`CONTENTFUL_API_ACCESS_TOKEN`** — in Contentful create a new Delivery API token, put it in Vercel/`.env.local`, revoke the old token.
+3. **`SOCIAL_DATA_API_KEY`** — regenerate in SocialData, update Vercel/`.env.local`, revoke the old key.
+
+Redeploy after changing Vercel env vars.
 
 ## Contentful publish webhook
 
@@ -36,10 +46,13 @@ Blog pages cache Contentful fetches for 60 seconds and also accept on-demand rev
 
 1. Add `REVALIDATE_SECRET` in Vercel (Production and Preview).
 2. In Contentful: **Settings → Webhooks → Add webhook**.
-3. URL: `https://<your-domain>/api/revalidate?secret=<REVALIDATE_SECRET>`  
-   Alternatively omit the query param and send header `x-revalidate-secret: <REVALIDATE_SECRET>`.
-4. Method: `POST`. Triggers: Entry **Publish**, **Unpublish**, and **Delete** (content type `blogPost`).
-5. On success the route revalidates `/blog` and, when the payload includes an entry id, `/blog/[postId]`.
+3. URL: `https://<your-domain>/api/revalidate` (no secret in the URL).
+4. Custom header: `x-revalidate-secret` = `<REVALIDATE_SECRET>`  
+   (or `Authorization: Bearer <REVALIDATE_SECRET>`).
+5. Method: **POST** only. Triggers: Entry **Publish**, **Unpublish**, and **Delete** (content type `blogPost`).
+6. On success the route revalidates `/blog` and, when the payload includes a valid entry id, `/blog/[postId]`.
+
+Do not put the secret in the query string — it can leak via logs and referrers.
 
 ## Learn More
 

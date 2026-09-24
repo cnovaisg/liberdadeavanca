@@ -1,13 +1,13 @@
-import NavSegment from "./subcomponents/nav.segment"
-import SocialMediaSegment from "./subcomponents/social-media.segment"
+import NavSegment from "./subcomponents/nav.segment";
+import SocialMediaSegment from "./subcomponents/social-media.segment";
 
 const Navbar = () => {
-    return (
-        <div className="w-full shrink-0 flex justify-between">
-            <NavSegment />
-            <SocialMediaSegment />
-        </div>
-    )
-}
+	return (
+		<div className="w-full shrink-0 flex justify-between">
+			<NavSegment />
+			<SocialMediaSegment />
+		</div>
+	);
+};
 
-export default Navbar
+export default Navbar;
