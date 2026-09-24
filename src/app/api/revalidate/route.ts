@@ -5,6 +5,7 @@ import {
 	BLOG_CACHE_TAG,
 	blogPostCacheTag,
 } from "@/features/blog/services/blog.cache";
+import { env } from "@/shared/lib/env";
 
 /**
  * On-demand cache revalidation for Contentful publishes.
@@ -84,7 +85,7 @@ const revalidateBlog = (entryId?: string) => {
 };
 
 const handleRevalidate = async (request: Request) => {
-	const expected = process.env.REVALIDATE_SECRET;
+	const expected = env.REVALIDATE_SECRET;
 	if (!expected) {
 		return NextResponse.json(
 			{ revalidated: false, message: "REVALIDATE_SECRET is not configured" },

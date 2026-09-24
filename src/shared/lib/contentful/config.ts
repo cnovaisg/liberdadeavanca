@@ -1,3 +1,5 @@
+import { getContentfulCredentials } from "@/shared/lib/env";
+
 export type ContentfulConfig = {
 	baseUrl: string;
 	headers: HeadersInit;
@@ -5,13 +7,12 @@ export type ContentfulConfig = {
 
 /** Returns null when Contentful env vars are missing (e.g. local build without `.env.local`). */
 export function getContentfulConfig(): ContentfulConfig | null {
-	const spaceId = process.env.CONTENTFUL_SPACE_ID;
-	const apiBaseUrl = process.env.CONTENTFUL_API_BASE_URL;
-	const accessToken = process.env.CONTENTFUL_API_ACCESS_TOKEN;
-
-	if (!spaceId || !apiBaseUrl || !accessToken) {
+	const credentials = getContentfulCredentials();
+	if (!credentials) {
 		return null;
 	}
+
+	const { spaceId, apiBaseUrl, accessToken } = credentials;
 
 	return {
 		baseUrl: `${apiBaseUrl}/spaces/${spaceId}/environments/master`,

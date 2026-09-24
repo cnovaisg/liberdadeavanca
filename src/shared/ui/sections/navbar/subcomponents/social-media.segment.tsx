@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { env } from "@/shared/lib/env";
 import MailIcon from "../../../icons/mail/mail.icon";
 import XIcon from "../../../icons/x/x.icon";
 
@@ -8,7 +9,7 @@ type LinkType = {
 };
 
 const X_PROFILE_HANDLE = "aLibAvancaPT";
-const MAIL = process.env.ACCOUNT_MAIL;
+const MAIL = env.ACCOUNT_MAIL;
 
 const xUrl = `https://x.com/${X_PROFILE_HANDLE}`;
 const mailUrl = `mailto:${MAIL}`;

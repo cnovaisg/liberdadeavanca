@@ -2,7 +2,7 @@ import Link from "next/link";
 import ArticleInfo from "@/shared/ui/sections/article-info/article-info.section";
 import Lines from "@/shared/ui/sections/lines/lines.section";
 import Paragraphs from "@/shared/ui/sections/paragraphs/paragraphs.section";
-import type { PrunedBlogPostType } from "../services/blog.service";
+import type { PrunedBlogPostType } from "../types";
 
 type BlogPostPageProps = {
 	post: PrunedBlogPostType;

@@ -1,48 +1,12 @@
 import { resolveAuthors } from "@/shared/lib/contentful/authors";
 import { fetchContentfulEntries } from "@/shared/lib/contentful/client";
 import { parseRichTextField } from "@/shared/lib/contentful/rich-text";
-import type {
-	ContentfulAuthorField,
-	ContentfulIncludes,
-	ContentfulParagraph,
-	ContentfulSys,
-} from "@/shared/lib/contentful/types";
+import type { BlogPostEntryType, PrunedBlogPostType } from "../types";
 import {
 	BLOG_CACHE_TAG,
 	BLOG_REVALIDATE_SECONDS,
 	blogPostCacheTag,
 } from "./blog.cache";
-
-export type BlogPostEntryType = {
-	sys: ContentfulSys;
-	fields: {
-		title: string;
-		subtitle?: string;
-		date?: string;
-		blogPostContent: {
-			nodeType: string;
-			data: Record<string, unknown>;
-			content: Array<{
-				nodeType: string;
-				data: Record<string, unknown>;
-				content: Array<{ value: string }>;
-			}>;
-		};
-		authors?: ContentfulAuthorField[];
-	};
-	includes?: ContentfulIncludes;
-};
-
-export type PrunedBlogPostType = {
-	id: string;
-	title: string;
-	subtitle?: string;
-	createdAt: string;
-	updatedAt: string;
-	revision: number;
-	authors: Array<{ name: string; role: string; imageUrl: string }>;
-	value: ContentfulParagraph[];
-};
 
 class BlogService {
 	private pruneBlogPost(post: BlogPostEntryType): PrunedBlogPostType {

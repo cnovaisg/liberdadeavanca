@@ -1,3 +1,5 @@
+import { getSocialDataCredentials } from "@/shared/lib/env";
+
 type SocialDataTweet = {
 	tweet_created_at?: string;
 	full_text?: string;
@@ -6,23 +8,21 @@ type SocialDataTweet = {
 
 class SocialDataXService {
 	private getConfig() {
-		const user = process.env.SOCIAL_DATA_X_ACCOUNT?.replace(/^@/, "");
-		const apiBaseUrl = process.env.SOCIAL_DATA_BASE_URL?.replace(/\/$/, "");
-		const token = process.env.SOCIAL_DATA_API_KEY;
-
-		if (!user || !apiBaseUrl || !token) {
+		const credentials = getSocialDataCredentials();
+		if (!credentials) {
 			return null;
 		}
 
-		const twitterRoot = apiBaseUrl.endsWith("/twitter")
-			? apiBaseUrl
-			: `${apiBaseUrl}/twitter`;
+		const { account, baseUrl, apiKey } = credentials;
+		const twitterRoot = baseUrl.endsWith("/twitter")
+			? baseUrl
+			: `${baseUrl}/twitter`;
 
 		return {
-			user,
+			user: account,
 			twitterRoot,
 			headers: {
-				Authorization: `Bearer ${token}`,
+				Authorization: `Bearer ${apiKey}`,
 				Accept: "application/json",
 			},
 		};
