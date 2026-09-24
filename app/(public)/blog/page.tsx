@@ -1,6 +1,6 @@
 import { Suspense } from "react";
 import Spinner from "@/src/shared/ui/components/spinner/spinner";
-import Blog from "@/src/shared/ui/pages/blog/blog.page";
+import Blog from "@/src/features/blog/ui/blog.page";
 
 const BlogPage = () => {
 	return (

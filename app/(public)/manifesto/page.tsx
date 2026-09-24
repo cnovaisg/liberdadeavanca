@@ -1,4 +1,4 @@
-import Manifesto from "@/src/shared/ui/pages/manifesto/manifesto.page"
+import Manifesto from "@/src/features/manifesto/ui/manifesto.page";
 
 const ManifestoPage = async () => {
     return <Manifesto />

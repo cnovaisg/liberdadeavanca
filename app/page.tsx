@@ -1,4 +1,4 @@
-import Landing from "@/src/shared/ui/pages/landing/landing.page";
+import Landing from "@/src/features/landing/ui/landing.page";
 
 export default function Home() {
   return <Landing />;

@@ -1,4 +1,4 @@
-import blogService from "@/src/features/blog/services/blog.service";
+import blogService from "../services/blog.service";
 import PostSummary from "./subcomponents/post-summary";
 
 const Blog = async () => {

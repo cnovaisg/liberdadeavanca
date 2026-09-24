@@ -1,8 +1,8 @@
 import Link from "next/link";
-import type { PrunedBlogPostType } from "@/src/features/blog/services/blog.service";
-import Articleinfo from "../../sections/article-info/article-info";
-import Lines from "../../sections/lines/lines";
-import Paragraphs from "../../sections/paragraphs/paragraphs";
+import type { PrunedBlogPostType } from "../services/blog.service";
+import Articleinfo from "@/src/shared/ui/sections/article-info/article-info";
+import Lines from "@/src/shared/ui/sections/lines/lines";
+import Paragraphs from "@/src/shared/ui/sections/paragraphs/paragraphs";
 
 type BlogPostPageProps = {
 	post: PrunedBlogPostType;

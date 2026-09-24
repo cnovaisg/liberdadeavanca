@@ -1,5 +1,5 @@
 import Link from "next/link";
-import type { PrunedBlogPostType } from "@/src/features/blog/services/blog.service";
+import type { PrunedBlogPostType } from "../../services/blog.service";
 import Articleinfo from "@/src/shared/ui/sections/article-info/article-info";
 
 type PostSummaryProps = {
