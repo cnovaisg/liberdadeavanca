@@ -1,4 +1,4 @@
-import Footer from "@/src/shared/ui/sections/footer/footer.section";
+import Footer from "@/shared/ui/sections/footer/footer.section";
 import Navbar from "../sections/navbar/navbar.section";
 
 export default function MainLayout({

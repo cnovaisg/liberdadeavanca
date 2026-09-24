@@ -4,7 +4,7 @@ import { NextResponse } from "next/server";
 import {
 	BLOG_CACHE_TAG,
 	blogPostCacheTag,
-} from "@/src/features/blog/services/blog.cache";
+} from "@/features/blog/services/blog.cache";
 
 /**
  * On-demand cache revalidation for Contentful publishes.

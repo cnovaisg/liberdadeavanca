@@ -1,7 +1,7 @@
 import { Suspense, use } from "react";
-import socialDataXService from "@/src/features/x-feed/services/x.service";
+import socialDataXService from "@/features/x-feed/services/x.service";
 import PostSlider from "./post-slider";
-import Spinner from "@/src/shared/ui/components/spinner/spinner";
+import Spinner from "@/shared/ui/components/spinner/spinner";
 const socialDataPromise = socialDataXService.getPostprocessedXfeed();
 
 const XFeedContent = () => {
