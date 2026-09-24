@@ -36,10 +36,13 @@ Blog pages cache Contentful fetches for 60 seconds and also accept on-demand rev
 
 1. Add `REVALIDATE_SECRET` in Vercel (Production and Preview).
 2. In Contentful: **Settings → Webhooks → Add webhook**.
-3. URL: `https://<your-domain>/api/revalidate?secret=<REVALIDATE_SECRET>`  
-   Alternatively omit the query param and send header `x-revalidate-secret: <REVALIDATE_SECRET>`.
-4. Method: `POST`. Triggers: Entry **Publish**, **Unpublish**, and **Delete** (content type `blogPost`).
-5. On success the route revalidates `/blog` and, when the payload includes an entry id, `/blog/[postId]`.
+3. URL: `https://<your-domain>/api/revalidate` (no secret in the URL).
+4. Custom header: `x-revalidate-secret` = `<REVALIDATE_SECRET>`  
+   (or `Authorization: Bearer <REVALIDATE_SECRET>`).
+5. Method: **POST** only. Triggers: Entry **Publish**, **Unpublish**, and **Delete** (content type `blogPost`).
+6. On success the route revalidates `/blog` and, when the payload includes a valid entry id, `/blog/[postId]`.
+
+Do not put the secret in the query string — it can leak via logs and referrers.
 
 ## Learn More
 
