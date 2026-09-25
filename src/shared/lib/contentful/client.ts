@@ -28,8 +28,19 @@ export async function fetchContentfulEntries<T>(
 	const url = new URL(`${config.baseUrl}/entries`);
 	url.searchParams.set("content_type", options.contentType);
 
+	const rawQuery: string[] = [];
 	for (const [key, value] of Object.entries(options.searchParams ?? {})) {
+		// Contentful filter keys use brackets (`metadata.tags.sys.id[in]`).
+		// `URLSearchParams` percent-encodes them, which the Delivery API rejects.
+		if (key.includes("[") || key.includes("]")) {
+			rawQuery.push(`${key}=${encodeURIComponent(value)}`);
+			continue;
+		}
 		url.searchParams.set(key, value);
+	}
+
+	if (rawQuery.length > 0) {
+		url.search += `${url.search ? "&" : "?"}${rawQuery.join("&")}`;
 	}
 
 	const response = await fetch(url.toString(), {

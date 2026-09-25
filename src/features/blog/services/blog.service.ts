@@ -6,19 +6,39 @@ import {
 	fetchPublicTags,
 	resolveEntryTags,
 } from "@/shared/lib/contentful/tags";
-import type { BlogPostEntryType, PrunedBlogPostType } from "../types";
+import type {
+	BlogPostEntryType,
+	BlogPostTagLink,
+	BlogTag,
+	PrunedBlogPostType,
+} from "../types";
 import {
 	BLOG_CACHE_TAG,
 	BLOG_REVALIDATE_SECONDS,
+	BLOG_TAGS_CACHE_TAG,
 	blogPostCacheTag,
+	isBlogTagId,
 } from "./blog.cache";
+
+const blogCache: NextFetchRequestConfig = {
+	revalidate: BLOG_REVALIDATE_SECONDS,
+	tags: [BLOG_CACHE_TAG, BLOG_TAGS_CACHE_TAG],
+};
 
 class BlogService {
 	private async getTagNamesById() {
-		const tags = await fetchPublicTags({
-			next: { revalidate: BLOG_REVALIDATE_SECONDS, tags: [BLOG_CACHE_TAG] },
-		});
+		const tags = await fetchPublicTags({ next: blogCache });
 		return buildTagMap(tags);
+	}
+
+	/** Drops links whose public name is missing, so raw ids are not shown. */
+	private resolveTags(
+		links: BlogPostTagLink[] | undefined,
+		tagNamesById: Map<string, string>,
+	): BlogTag[] {
+		return resolveEntryTags(links, tagNamesById).filter((tag) =>
+			tagNamesById.has(tag.id),
+		);
 	}
 
 	private pruneBlogPost(
@@ -35,7 +55,7 @@ class BlogService {
 			updatedAt: sys.updatedAt,
 			revision: sys.revision,
 			authors: resolveAuthors(fields.authors, includes),
-			hashtags: resolveEntryTags(metadata?.tags, tagNamesById),
+			tags: this.resolveTags(metadata?.tags, tagNamesById),
 			value: parseRichTextField(fields.blogPostContent),
 		};
 	}
@@ -53,6 +73,20 @@ class BlogService {
 		});
 	}
 
+	private mapPosts(
+		data: {
+			items: BlogPostEntryType[];
+			includes?: BlogPostEntryType["includes"];
+		} | null,
+		tagNamesById: Map<string, string>,
+	): PrunedBlogPostType[] {
+		if (!data) return [];
+
+		return data.items.map((post) =>
+			this.pruneBlogPost({ ...post, includes: data.includes }, tagNamesById),
+		);
+	}
+
 	async getLatestBlogPosts(
 		numberOfPosts: number = 3,
 	): Promise<PrunedBlogPostType[]> {
@@ -60,11 +94,8 @@ class BlogService {
 			this.fetchEntries(numberOfPosts),
 			this.getTagNamesById(),
 		]);
-		if (!data) return [];
 
-		return data.items.map((post) =>
-			this.pruneBlogPost({ ...post, includes: data.includes }, tagNamesById),
-		);
+		return this.mapPosts(data, tagNamesById);
 	}
 
 	async getPostById(id: string): Promise<PrunedBlogPostType | null> {
@@ -85,9 +116,7 @@ class BlogService {
 			this.getTagNamesById(),
 		]);
 
-		if (!data) return null;
-
-		const post = data.items[0];
+		const post = data?.items[0];
 		if (!post) return null;
 
 		return this.pruneBlogPost(
@@ -101,11 +130,44 @@ class BlogService {
 			this.fetchEntries(),
 			this.getTagNamesById(),
 		]);
-		if (!data) return [];
 
-		return data.items.map((post) =>
-			this.pruneBlogPost({ ...post, includes: data.includes }, tagNamesById),
-		);
+		return this.mapPosts(data, tagNamesById);
+	}
+
+	/**
+	 * Posts that carry the public tag `tagId`, plus the resolved tag when the
+	 * id exists in the Delivery API tag catalog.
+	 * Invalid ids skip the entries query and return an empty list.
+	 */
+	async getPostsByTag(
+		tagId: string,
+	): Promise<{ posts: PrunedBlogPostType[]; tag: BlogTag | null }> {
+		const normalized = tagId.trim();
+		if (!isBlogTagId(normalized)) {
+			return { posts: [], tag: null };
+		}
+
+		const [data, tagNamesById] = await Promise.all([
+			fetchContentfulEntries<BlogPostEntryType>({
+				contentType: "blogPost",
+				searchParams: {
+					locale: "en-US",
+					include: "2",
+					order: "-sys.createdAt",
+					limit: "100",
+					"metadata.tags.sys.id[in]": normalized,
+				},
+				next: blogCache,
+			}),
+			this.getTagNamesById(),
+		]);
+
+		const name = tagNamesById.get(normalized);
+
+		return {
+			tag: name ? { id: normalized, name } : null,
+			posts: this.mapPosts(data, tagNamesById),
+		};
 	}
 }
 
