@@ -37,6 +37,8 @@ export type BlogPostEntryType = {
 	includes?: ContentfulIncludes;
 };
 
+export type BlogTag = ContentfulTag;
+
 export type PrunedBlogPostType = {
 	id: string;
 	title: string;
@@ -45,7 +47,7 @@ export type PrunedBlogPostType = {
 	updatedAt: string;
 	revision: number;
 	authors: Array<{ name: string; role: string; imageUrl: string }>;
-	/** Contentful public tags (hashtags) attached to the entry. */
-	hashtags: ContentfulTag[];
+	/** Public tags with resolved display names. Unresolved ids are omitted. */
+	tags: BlogTag[];
 	value: ContentfulParagraph[];
 };
