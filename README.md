@@ -49,12 +49,29 @@ Blog pages cache Contentful fetches for 60 seconds and also accept on-demand rev
 3. URL: `https://<your-domain>/api/revalidate` (no secret in the URL).
 4. Custom header: `x-revalidate-secret` = `<REVALIDATE_SECRET>`  
    (or `Authorization: Bearer <REVALIDATE_SECRET>`).
-5. Method: **POST** only. Triggers:
-   - Entry **Publish**, **Unpublish**, and **Delete** (content type `blogPost`).
-   - Tag **Create**, **Save**, and **Delete** (so a renamed or new public tag refreshes display names without republishing every post).
-6. On success the route revalidates `/blog`, filtered listings under `/blog/tag/[tagId]`, and, when the payload includes a valid entry id, `/blog/[postId]` for that entry. Tag events also revalidate every `/blog/[postId]` page.
+5. Method: **POST** only. Triggers: Entry **Publish**, **Unpublish**, and **Delete** (content type `blogPost`).
+6. On success the route revalidates `/blog` and, when the payload includes a valid entry id, `/blog/[postId]`.
 
 Do not put the secret in the query string — it can leak via logs and referrers.
+
+## Contentful public tags (hashtags)
+
+Blog posts show hashtags from Contentful **public** tags attached to each entry (`metadata.tags`). Private tags are not returned by the Delivery API and will not appear on the site.
+
+### Create public tags
+
+1. In Contentful: **Settings → Tags** (or the Tags section in the sidebar).
+2. Create a tag with **visibility = public**.
+3. Use a short id/name suitable for display (e.g. `politica`, `economia`). The site renders `#` + the tag name.
+4. Visibility cannot be changed after creation — if you create a private tag by mistake, create a new public one.
+
+### Assign tags to posts
+
+1. Open a `blogPost` entry.
+2. In the sidebar, open **Tags** and add one or more public tags.
+3. **Publish** the entry (and ensure the revalidate webhook is configured) so the site updates.
+
+Until tags are assigned and published, the blog UI simply hides the hashtag row.
 
 ## Learn More
 

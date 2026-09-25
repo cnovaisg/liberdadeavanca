@@ -3,7 +3,6 @@ import { revalidatePath, revalidateTag } from "next/cache";
 import { NextResponse } from "next/server";
 import {
 	BLOG_CACHE_TAG,
-	BLOG_TAGS_CACHE_TAG,
 	blogPostCacheTag,
 } from "@/features/blog/services/blog.cache";
 import { env } from "@/shared/lib/env";
@@ -18,25 +17,17 @@ import { env } from "@/shared/lib/env";
  *   Headers: `x-revalidate-secret: <REVALIDATE_SECRET>`
  *            (or `Authorization: Bearer <REVALIDATE_SECRET>`)
  *   Method: POST only
- *   Triggers: Entry publish, unpublish, delete (content type blogPost).
- *             Tag create, save, and delete (so renames and new public tags
- *             refresh the catalog and every page that renders tag names).
+ *   Triggers: Entry publish, unpublish, delete (content type blogPost)
  *
  * The secret must not be passed in the query string (avoids log/referrer leaks).
- * On success the route revalidates `/blog`, filtered listings at `/blog/tag/[tagId]`,
- * and, when the payload includes a valid entry id, `/blog/[postId]` for that entry.
- * Tag events also revalidate every blog post page, because display names live there.
+ * On success the route revalidates `/blog` and, when the payload includes a
+ * valid entry id, `/blog/[postId]` for that entry.
  */
 
 type ContentfulWebhookBody = {
-	sys?: { id?: unknown; type?: unknown };
+	sys?: { id?: unknown };
 	entryId?: unknown;
 	entityId?: unknown;
-};
-
-type WebhookTarget = {
-	isTag: boolean;
-	entryId?: string;
 };
 
 /** Contentful entry ids are alphanumeric (optionally with `_` / `-`). */
@@ -73,49 +64,29 @@ const asEntryId = (value: unknown): string | undefined => {
 	return ENTRY_ID_PATTERN.test(id) ? id : undefined;
 };
 
-const isTagTopic = (topic: string | null) =>
-	typeof topic === "string" && /\.tag\./i.test(topic);
-
-const readWebhookTarget = async (request: Request): Promise<WebhookTarget> => {
-	const topic = request.headers.get("x-contentful-topic");
-
+const extractEntryId = async (
+	request: Request,
+): Promise<string | undefined> => {
 	try {
 		const body = (await request.json()) as ContentfulWebhookBody;
-		const isTag = isTagTopic(topic) || body?.sys?.type === "Tag";
-		if (isTag) return { isTag: true };
-
-		return {
-			isTag: false,
-			entryId:
-				asEntryId(body?.sys?.id) ??
-				asEntryId(body?.entryId) ??
-				asEntryId(body?.entityId),
-		};
+		return (
+			asEntryId(body?.sys?.id) ??
+			asEntryId(body?.entryId) ??
+			asEntryId(body?.entityId)
+		);
 	} catch {
-		return { isTag: isTagTopic(topic) };
+		return undefined;
 	}
 };
 
-const revalidateBlog = ({ isTag, entryId }: WebhookTarget) => {
+const revalidateBlog = (entryId?: string) => {
 	revalidateTag(BLOG_CACHE_TAG, { expire: 0 });
-	revalidateTag(BLOG_TAGS_CACHE_TAG, { expire: 0 });
 	revalidatePath("/blog");
-	revalidatePath("/blog/tag/[tagId]", "page");
-
-	const paths = ["/blog", "/blog/tag/[tagId]"];
-
-	if (isTag) {
-		revalidatePath("/blog/[postId]", "page");
-		paths.push("/blog/[postId]");
-	}
 
 	if (entryId) {
 		revalidateTag(blogPostCacheTag(entryId), { expire: 0 });
 		revalidatePath(`/blog/${entryId}`);
-		paths.push(`/blog/${entryId}`);
 	}
-
-	return paths;
 };
 
 export async function POST(request: Request) {
@@ -132,12 +103,12 @@ export async function POST(request: Request) {
 		return unauthorized();
 	}
 
-	const target = await readWebhookTarget(request);
-	const paths = revalidateBlog(target);
+	const entryId = await extractEntryId(request);
+	revalidateBlog(entryId);
 
 	return NextResponse.json({
 		revalidated: true,
 		now: Date.now(),
-		paths,
+		paths: entryId ? ["/blog", `/blog/${entryId}`] : ["/blog"],
 	});
 }
