@@ -1,3 +1,4 @@
+import type { ContentfulTag } from "@/shared/lib/contentful/tags";
 import type {
 	ContentfulAuthorField,
 	ContentfulIncludes,
@@ -5,8 +6,19 @@ import type {
 	ContentfulSys,
 } from "@/shared/lib/contentful/types";
 
+export type BlogPostTagLink = {
+	sys: {
+		type?: string;
+		linkType?: string;
+		id: string;
+	};
+};
+
 export type BlogPostEntryType = {
 	sys: ContentfulSys;
+	metadata?: {
+		tags?: BlogPostTagLink[];
+	};
 	fields: {
 		title: string;
 		subtitle?: string;
@@ -33,5 +45,7 @@ export type PrunedBlogPostType = {
 	updatedAt: string;
 	revision: number;
 	authors: Array<{ name: string; role: string; imageUrl: string }>;
+	/** Contentful public tags (hashtags) attached to the entry. */
+	hashtags: ContentfulTag[];
 	value: ContentfulParagraph[];
 };

@@ -3,6 +3,7 @@ import ArticleInfo from "@/shared/ui/sections/article-info/article-info.section"
 import Lines from "@/shared/ui/sections/lines/lines.section";
 import Paragraphs from "@/shared/ui/sections/paragraphs/paragraphs.section";
 import type { PrunedBlogPostType } from "../types";
+import PostHashtags from "./subcomponents/post-hashtags";
 
 type BlogPostPageProps = {
 	post: PrunedBlogPostType;
@@ -34,6 +35,8 @@ const BlogPost = ({ post }: BlogPostPageProps) => {
 						</h2>
 					) : null}
 				</div>
+
+				<PostHashtags hashtags={post.hashtags} />
 
 				<ArticleInfo
 					authors={post.authors}
