@@ -22,7 +22,7 @@ const CallToAction = () => {
 			"
 		>
 			<h2 className="flex items-center md:block pb-2 md:pb-0 md:pe-2 md:border-e-[1.5px] border-emerald-700">
-				Em defesa dos direitos do indivíduo
+				Em defesa da sociedade civil
 			</h2>
 
 			<div className="h-px w-full bg-emerald-700 md:hidden" />
