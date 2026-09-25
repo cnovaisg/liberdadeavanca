@@ -3,10 +3,19 @@ import type {
 	ContentfulIncludes,
 	ContentfulParagraph,
 	ContentfulSys,
+	ContentfulTagLink,
 } from "@/shared/lib/contentful/types";
+
+export type BlogTag = {
+	id: string;
+	name: string;
+};
 
 export type BlogPostEntryType = {
 	sys: ContentfulSys;
+	metadata?: {
+		tags?: ContentfulTagLink[];
+	};
 	fields: {
 		title: string;
 		subtitle?: string;
@@ -33,5 +42,6 @@ export type PrunedBlogPostType = {
 	updatedAt: string;
 	revision: number;
 	authors: Array<{ name: string; role: string; imageUrl: string }>;
+	tags: BlogTag[];
 	value: ContentfulParagraph[];
 };

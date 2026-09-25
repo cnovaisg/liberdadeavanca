@@ -49,8 +49,10 @@ Blog pages cache Contentful fetches for 60 seconds and also accept on-demand rev
 3. URL: `https://<your-domain>/api/revalidate` (no secret in the URL).
 4. Custom header: `x-revalidate-secret` = `<REVALIDATE_SECRET>`  
    (or `Authorization: Bearer <REVALIDATE_SECRET>`).
-5. Method: **POST** only. Triggers: Entry **Publish**, **Unpublish**, and **Delete** (content type `blogPost`).
-6. On success the route revalidates `/blog` and, when the payload includes a valid entry id, `/blog/[postId]`.
+5. Method: **POST** only. Triggers:
+   - Entry **Publish**, **Unpublish**, and **Delete** (content type `blogPost`).
+   - Tag **Create**, **Save**, and **Delete** (so a renamed or new public tag refreshes display names without republishing every post).
+6. On success the route revalidates `/blog`, filtered listings under `/blog/tag/[tagId]`, and, when the payload includes a valid entry id, `/blog/[postId]` for that entry. Tag events also revalidate every `/blog/[postId]` page.
 
 Do not put the secret in the query string — it can leak via logs and referrers.
 

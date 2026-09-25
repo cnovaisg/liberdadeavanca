@@ -3,6 +3,7 @@ import ArticleInfo from "@/shared/ui/sections/article-info/article-info.section"
 import Lines from "@/shared/ui/sections/lines/lines.section";
 import Paragraphs from "@/shared/ui/sections/paragraphs/paragraphs.section";
 import type { PrunedBlogPostType } from "../types";
+import PostTags from "./subcomponents/post-tags";
 
 type BlogPostPageProps = {
 	post: PrunedBlogPostType;
@@ -39,6 +40,7 @@ const BlogPost = ({ post }: BlogPostPageProps) => {
 					authors={post.authors}
 					createdAt={post.createdAt}
 					updatedAt={post.updatedAt}
+					tags={<PostTags tags={post.tags} />}
 				/>
 			</div>
 

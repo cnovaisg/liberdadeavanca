@@ -27,4 +27,23 @@ export type ContentfulSys = {
 	revision: number;
 };
 
+/** Built-in metadata tag link on an entry (`metadata.tags`). */
+export type ContentfulTagLink = {
+	sys: {
+		type?: string;
+		linkType?: string;
+		id: string;
+	};
+};
+
+/** Tag entity from the Delivery API `/tags` collection. */
+export type ContentfulTag = {
+	name: string;
+	sys: {
+		id: string;
+		type?: string;
+		visibility?: string;
+	};
+};
+
 export type ContentfulParagraph = { paragraph: string };
