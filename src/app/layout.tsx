@@ -18,8 +18,7 @@ const anton = Anton({
 
 export const metadata: Metadata = {
 	title: "Liberdade Avança",
-	description:
-		"Movimento Liberdade Avança: em defesa da sociedade civil.",
+	description: "Movimento Liberdade Avança: em defesa da sociedade civil.",
 };
 
 export default function RootLayout({
