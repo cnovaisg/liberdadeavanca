@@ -1,6 +1,7 @@
 import Link from "next/link";
 import ArticleInfo from "@/shared/ui/sections/article-info/article-info.section";
 import type { PrunedBlogPostType } from "../../types";
+import PostHashtags from "./post-hashtags";
 
 type PostSummaryProps = {
 	post: PrunedBlogPostType;
@@ -31,6 +32,8 @@ const PostSummary = ({ post, featured = false }: PostSummaryProps) => {
 					<p className={subtitleClass}>{post.subtitle}</p>
 				) : null}
 			</div>
+
+			<PostHashtags hashtags={post.hashtags} />
 
 			<ArticleInfo
 				authors={post.authors}

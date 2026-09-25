@@ -54,6 +54,25 @@ Blog pages cache Contentful fetches for 60 seconds and also accept on-demand rev
 
 Do not put the secret in the query string — it can leak via logs and referrers.
 
+## Contentful public tags (hashtags)
+
+Blog posts show hashtags from Contentful **public** tags attached to each entry (`metadata.tags`). Private tags are not returned by the Delivery API and will not appear on the site.
+
+### Create public tags
+
+1. In Contentful: **Settings → Tags** (or the Tags section in the sidebar).
+2. Create a tag with **visibility = public**.
+3. Use a short id/name suitable for display (e.g. `politica`, `economia`). The site renders `#` + the tag name.
+4. Visibility cannot be changed after creation — if you create a private tag by mistake, create a new public one.
+
+### Assign tags to posts
+
+1. Open a `blogPost` entry.
+2. In the sidebar, open **Tags** and add one or more public tags.
+3. **Publish** the entry (and ensure the revalidate webhook is configured) so the site updates.
+
+Until tags are assigned and published, the blog UI simply hides the hashtag row.
+
 ## Learn More
 
 To learn more about Next.js, take a look at the following resources:
