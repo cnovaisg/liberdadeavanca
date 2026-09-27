@@ -1,16 +1,10 @@
-import { Suspense, use } from "react";
 import Authors from "@/shared/ui/components/authors/authors";
 import LabelValue from "@/shared/ui/components/label-value/label-value";
-import Spinner from "@/shared/ui/components/spinner/spinner";
 import Paragraphs from "@/shared/ui/sections/paragraphs/paragraphs.section";
 import manifestoService from "../services/manifesto.service";
 
-const MANIFESTO_LEAD =
-	"Este movimento de ideias propõe apoiar, dentro do ordenamento jurídico-constitucional português e possíveis alterações, um programa de redução do peso do Estado na economia e sociedade civil em 50% por cortes quer nos impostos quer na despesa incluindo por privatizações com o objectivo de atingir um crescimento económico de 50% numa década e propor uma reforma da segurança social da componente contributiva que assegure equilíbrio financeiro mas também uma alternativa para as novas gerações.";
-
-const manifestoPromise = manifestoService.getManifesto();
-const ManifestoContent = () => {
-	const manifesto = use(manifestoPromise);
+const Manifesto = async () => {
+	const manifesto = await manifestoService.getManifesto();
 
 	if (!manifesto) {
 		return (
@@ -28,6 +22,7 @@ const ManifestoContent = () => {
 	}
 
 	const authors = manifesto.authors;
+	const intro = manifesto.intro ?? [];
 	const mainContent = manifesto.value ?? [];
 
 	const parsedPublicationDate = new Date(
@@ -75,21 +70,18 @@ const ManifestoContent = () => {
 					</div>
 				</div>
 			</div>
-			<div className="pt-8">
-				<Paragraphs paragraphs={[{ paragraph: MANIFESTO_LEAD }]} />
-			</div>
+			{intro.length > 0 ? (
+				<div className="pt-8">
+					<Paragraphs paragraphs={intro} />
+				</div>
+			) : null}
 			<div className="flex pt-4 pb-10">
-				<Paragraphs paragraphs={mainContent} initialDelay={1} />
+				<Paragraphs
+					paragraphs={mainContent}
+					initialDelay={intro.length > 0 ? 1 : 0}
+				/>
 			</div>
 		</div>
-	);
-};
-
-const Manifesto = () => {
-	return (
-		<Suspense fallback={<Spinner />}>
-			<ManifestoContent />
-		</Suspense>
 	);
 };
 

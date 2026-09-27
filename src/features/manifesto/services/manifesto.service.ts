@@ -2,8 +2,15 @@ import { resolveAuthors } from "@/shared/lib/contentful/authors";
 import { fetchContentfulEntries } from "@/shared/lib/contentful/client";
 import { parseRichTextField } from "@/shared/lib/contentful/rich-text";
 import type { ManifestoEntryType, PrunedManifestoEntryType } from "../types";
+import {
+	MANIFESTO_CACHE_TAG,
+	MANIFESTO_REVALIDATE_SECONDS,
+} from "./manifesto.cache";
 
-const MANIFESTO_TTL = 0;
+const manifestoCache: NextFetchRequestConfig = {
+	revalidate: MANIFESTO_REVALIDATE_SECONDS,
+	tags: [MANIFESTO_CACHE_TAG],
+};
 
 class ManifestoService {
 	private pruneManifesto(
@@ -31,11 +38,11 @@ class ManifestoService {
 		const data = await fetchContentfulEntries<ManifestoEntryType>({
 			contentType: "manifesto",
 			searchParams: {
+				locale: "en-US",
 				limit: "1",
 				include: "2",
 			},
-			next: { revalidate: MANIFESTO_TTL },
-			cache: "no-store",
+			next: manifestoCache,
 		});
 
 		if (!data) return null;
