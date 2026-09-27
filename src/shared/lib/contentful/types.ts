@@ -1,8 +1,7 @@
-export type ContentfulAuthor = {
-	name: string;
-	role: string;
-	imageUrl: string;
-};
+import type { Author } from "@/shared/lib/author";
+
+/** Author fields as stored / resolved from Contentful. */
+export type ContentfulAuthor = Author;
 
 export type ContentfulAuthorLink = {
 	sys: { id: string; type?: string; linkType?: string };

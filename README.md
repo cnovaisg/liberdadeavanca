@@ -9,6 +9,10 @@ npm install
 npm run dev
 ```
 
+```bash
+npm test
+```
+
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
 You can start editing the page by modifying `src/app/page.tsx`. The page auto-updates as you edit the file.
@@ -24,6 +28,7 @@ Set these in `.env.local` (copy from `.env.example`). Same keys in the Vercel pr
 | `CONTENTFUL_SPACE_ID` | Contentful space id |
 | `CONTENTFUL_API_BASE_URL` | Delivery host only: `https://cdn.contentful.com` (or Preview: `https://preview.contentful.com`). Never `api.contentful.com` |
 | `CONTENTFUL_API_ACCESS_TOKEN` | Contentful **Content Delivery** (or Preview) token — not Management (CMA) |
+| `CONTENTFUL_LOCALE` | Optional Delivery locale for queries (default `en-US`). UI language is `pt-PT` |
 | `CONTENTFUL_WEBHOOK_SIGNING_SECRET` | Space-level webhook HMAC secret (Settings → Webhooks → Settings). Optional until request verification is enabled; then required. Comma-separate two secrets during rotation |
 | `REVALIDATE_SECRET` | Shared secret for the on-demand revalidation webhook |
 | `ACCOUNT_MAIL` | Contact address for the mailto icon |

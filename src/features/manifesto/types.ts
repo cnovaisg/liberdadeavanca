@@ -1,3 +1,4 @@
+import type { Author } from "@/shared/lib/author";
 import type {
 	ContentfulAuthorField,
 	ContentfulIncludes,
@@ -33,5 +34,5 @@ export type PrunedManifestoEntryType = {
 	subtitle?: string;
 	intro: ContentfulParagraph[];
 	value: ContentfulParagraph[];
-	authors: Array<{ name: string; role: string; imageUrl: string }>;
+	authors: Author[];
 };

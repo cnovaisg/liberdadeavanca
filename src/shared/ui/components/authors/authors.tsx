@@ -1,17 +1,14 @@
+import type { Author } from "@/shared/lib/author";
 import LabelValue from "../label-value/label-value";
 
-export type AuthorType = {
-	name: string;
-	role: string;
-	contact?: string;
-	imageUrl: string;
-};
+/** @deprecated Prefer importing `Author` from `@/shared/lib/author`. */
+export type AuthorType = Author;
 
 export type AuthorsProps = {
-	authors: AuthorType[];
+	authors: Author[];
 };
 
-const generateParsedAuthorsNames = (authors?: AuthorType[]) => {
+const generateParsedAuthorsNames = (authors?: Author[]) => {
 	if (!authors || authors.length === 0) return "";
 	const numberOfAuthors = authors.length;
 	if (numberOfAuthors === 1) return authors[0].name;

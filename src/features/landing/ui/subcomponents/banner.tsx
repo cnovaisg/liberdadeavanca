@@ -1,4 +1,4 @@
-import XPostsFeed from "@/features/x-feed/ui/x-posts-feed";
+import { XPostsFeed } from "@/features/x-feed";
 import CallToAction from "./call-to-action";
 import Title from "./title";
 

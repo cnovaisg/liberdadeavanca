@@ -1,5 +1,4 @@
-import manifestoService from "@/features/manifesto/services/manifesto.service";
-import Manifesto from "@/features/manifesto/ui/manifesto.page";
+import { Manifesto, manifestoService } from "@/features/manifesto";
 
 const ManifestoPage = async () => {
 	const manifesto = await manifestoService.getManifesto();

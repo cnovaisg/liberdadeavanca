@@ -1,3 +1,4 @@
+import type { Author } from "@/shared/lib/author";
 import type { ContentfulTag } from "@/shared/lib/contentful/tags";
 import type {
 	ContentfulAuthorField,
@@ -46,7 +47,7 @@ export type PrunedBlogPostType = {
 	createdAt: string;
 	updatedAt: string;
 	revision: number;
-	authors: Array<{ name: string; role: string; imageUrl: string }>;
+	authors: Author[];
 	/** Public tags with resolved display names. Unresolved ids are omitted. */
 	tags: BlogTag[];
 	value: ContentfulParagraph[];

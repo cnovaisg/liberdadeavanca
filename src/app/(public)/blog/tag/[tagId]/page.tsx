@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
-import blogService from "@/features/blog/services/blog.service";
-import Blog from "@/features/blog/ui/blog.page";
+import { Blog, blogService } from "@/features/blog";
 import Spinner from "@/shared/ui/components/spinner/spinner";
 
 type BlogTagPageProps = {
