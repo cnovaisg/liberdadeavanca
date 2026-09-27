@@ -6,6 +6,7 @@ import {
 	BLOG_TAGS_CACHE_TAG,
 	blogPostCacheTag,
 } from "@/features/blog/services/blog.cache";
+import { MANIFESTO_CACHE_TAG } from "@/features/manifesto/services/manifesto.cache";
 import { env } from "@/shared/lib/env";
 
 /**
@@ -18,19 +19,24 @@ import { env } from "@/shared/lib/env";
  *   Headers: `x-revalidate-secret: <REVALIDATE_SECRET>`
  *            (or `Authorization: Bearer <REVALIDATE_SECRET>`)
  *   Method: POST only
- *   Triggers: Entry publish, unpublish, delete (content type blogPost).
+ *   Triggers: Entry publish, unpublish, delete (content types blogPost, manifesto).
  *             Tag create, save, and delete are optional: they refresh display
  *             names immediately. Without them, a rename still appears within
  *             the 60 second cache window.
  *
  * The secret must not be passed in the query string (avoids log/referrer leaks).
- * On success the route revalidates `/blog`, filtered listings at `/blog/tag/[tagId]`,
- * and, when the payload includes a valid entry id, `/blog/[postId]` for that entry.
+ * On success the route revalidates:
+ *   - blog: `/blog`, `/blog/tag/[tagId]`, and optionally `/blog/[postId]`
+ *   - manifesto: `/manifesto`
  * Tag events also revalidate every blog post page, because display names live there.
  */
 
 type ContentfulWebhookBody = {
-	sys?: { id?: unknown; type?: unknown };
+	sys?: {
+		id?: unknown;
+		type?: unknown;
+		contentType?: { sys?: { id?: unknown } };
+	};
 	entryId?: unknown;
 	entityId?: unknown;
 };
@@ -38,6 +44,7 @@ type ContentfulWebhookBody = {
 type WebhookTarget = {
 	isTag: boolean;
 	entryId?: string;
+	contentTypeId?: string;
 };
 
 /** Contentful entry ids are alphanumeric (optionally with `_` / `-`). */
@@ -74,6 +81,12 @@ const asEntryId = (value: unknown): string | undefined => {
 	return ENTRY_ID_PATTERN.test(id) ? id : undefined;
 };
 
+const asContentTypeId = (value: unknown): string | undefined => {
+	if (typeof value !== "string") return undefined;
+	const id = value.trim();
+	return ENTRY_ID_PATTERN.test(id) ? id : undefined;
+};
+
 const isTagTopic = (topic: string | null) =>
 	typeof topic === "string" && /\.tag\./i.test(topic);
 
@@ -91,6 +104,7 @@ const readWebhookTarget = async (request: Request): Promise<WebhookTarget> => {
 				asEntryId(body?.sys?.id) ??
 				asEntryId(body?.entryId) ??
 				asEntryId(body?.entityId),
+			contentTypeId: asContentTypeId(body?.sys?.contentType?.sys?.id),
 		};
 	} catch {
 		return { isTag: isTagTopic(topic) };
@@ -119,6 +133,12 @@ const revalidateBlog = ({ isTag, entryId }: WebhookTarget) => {
 	return paths;
 };
 
+const revalidateManifesto = () => {
+	revalidateTag(MANIFESTO_CACHE_TAG, { expire: 0 });
+	revalidatePath("/manifesto");
+	return ["/manifesto"];
+};
+
 export async function POST(request: Request) {
 	const expected = env.REVALIDATE_SECRET;
 	if (!expected) {
@@ -134,7 +154,19 @@ export async function POST(request: Request) {
 	}
 
 	const target = await readWebhookTarget(request);
-	const paths = revalidateBlog(target);
+	const paths: string[] = [];
+
+	if (target.isTag) {
+		paths.push(...revalidateBlog(target));
+	} else if (target.contentTypeId === "manifesto") {
+		paths.push(...revalidateManifesto());
+	} else if (
+		target.contentTypeId === "blogPost" ||
+		target.contentTypeId === undefined
+	) {
+		// Unknown content type: refresh blog (legacy webhook payloads).
+		paths.push(...revalidateBlog(target));
+	}
 
 	return NextResponse.json({
 		revalidated: true,
