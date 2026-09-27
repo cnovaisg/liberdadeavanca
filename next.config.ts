@@ -1,5 +1,9 @@
 import type { NextConfig } from "next";
 
+/**
+ * Static security headers. CSP is set per-request in `src/proxy.ts`
+ * (nonce + strict-dynamic) so it is not duplicated here.
+ */
 const securityHeaders = [
 	{
 		key: "X-Frame-Options",
@@ -20,22 +24,6 @@ const securityHeaders = [
 	{
 		key: "Strict-Transport-Security",
 		value: "max-age=63072000; includeSubDomains; preload",
-	},
-	{
-		key: "Content-Security-Policy",
-		value: [
-			"default-src 'self'",
-			"script-src 'self' 'unsafe-inline' 'unsafe-eval'",
-			"style-src 'self' 'unsafe-inline'",
-			"img-src 'self' data: blob: https://res.cloudinary.com",
-			"font-src 'self' data:",
-			"connect-src 'self'",
-			"object-src 'none'",
-			"base-uri 'self'",
-			"form-action 'self'",
-			"frame-ancestors 'none'",
-			"upgrade-insecure-requests",
-		].join("; "),
 	},
 ];
 

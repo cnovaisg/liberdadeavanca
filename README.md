@@ -95,6 +95,15 @@ To learn more about Next.js, take a look at the following resources:
 
 You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
 
+## Content Security Policy
+
+CSP is applied per request in `src/proxy.ts` (not in `next.config.ts`):
+
+- **Scripts:** `'nonce-…'` + `'strict-dynamic'` — no `'unsafe-inline'`. `'unsafe-eval'` only in development.
+- **Styles:** `'unsafe-inline'` kept for Motion / style attributes (main XSS surface is scripts).
+
+Root layout reads `headers()` so pages render at request time and Next.js can attach the nonce to framework scripts.
+
 ## Deploy on Vercel
 
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
