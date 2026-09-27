@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Anton, Geist } from "next/font/google";
+import { headers } from "next/headers";
 import "./globals.css";
 import MainLayout from "@/shared/ui/layouts/main.layout";
 
@@ -21,11 +22,15 @@ export const metadata: Metadata = {
 	description: "Movimento Liberdade Avança: em defesa da sociedade civil.",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
 	children,
 }: {
 	children: React.ReactNode;
 }) {
+	// Request-time render so Next.js can apply the CSP nonce from Proxy
+	// to framework scripts (static shells cannot receive a per-request nonce).
+	await headers();
+
 	return (
 		<html lang="pt-PT" className={`${geist.variable} ${anton.variable}`}>
 			<body className="font-geist">
