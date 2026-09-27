@@ -8,6 +8,10 @@ import {
 } from "@/features/blog/services/blog.cache";
 import { MANIFESTO_CACHE_TAG } from "@/features/manifesto/services/manifesto.cache";
 import { isContentfulId } from "@/shared/lib/contentful/ids";
+import {
+	parseContentfulSigningSecrets,
+	verifyContentfulWebhookRequest,
+} from "@/shared/lib/contentful/webhook-signature";
 import { env } from "@/shared/lib/env";
 import { checkRateLimit, clientIpFromRequest } from "@/shared/lib/rate-limit";
 
@@ -17,16 +21,24 @@ const REVALIDATE_RATE_LIMIT = {
 	max: 30,
 } as const;
 
+/** Replay window for Contentful HMAC timestamps. */
+const CONTENTFUL_SIGNATURE_TTL_SECONDS = 60;
+
 /**
  * On-demand cache revalidation for Contentful publishes.
  *
- * Env: REVALIDATE_SECRET (Vercel project env — do not commit the value).
+ * Env:
+ *   - REVALIDATE_SECRET — shared header secret (required)
+ *   - CONTENTFUL_WEBHOOK_SIGNING_SECRET — space signing secret (optional;
+ *     when set, Contentful HMAC headers are required)
  *
  * Contentful webhook (Settings → Webhooks):
  *   URL:  https://<host>/api/revalidate
  *   Headers: `x-revalidate-secret: <REVALIDATE_SECRET>`
  *            (or `Authorization: Bearer <REVALIDATE_SECRET>`)
  *   Method: POST only
+ *   Also enable space-level request verification (Settings tab) and set
+ *   CONTENTFUL_WEBHOOK_SIGNING_SECRET in Vercel to the generated secret.
  *   Triggers: Entry publish, unpublish, delete (content types blogPost, manifesto).
  *             Tag create, save, and delete are optional: they refresh display
  *             names immediately. Without them, a rename still appears within
@@ -55,11 +67,8 @@ type WebhookTarget = {
 	contentTypeId?: string;
 };
 
-const unauthorized = () =>
-	NextResponse.json(
-		{ revalidated: false, message: "Unauthorized" },
-		{ status: 401 },
-	);
+const unauthorized = (message = "Unauthorized") =>
+	NextResponse.json({ revalidated: false, message }, { status: 401 });
 
 const secretsMatch = (provided: string, expected: string) => {
 	const providedHash = createHash("sha256").update(provided).digest();
@@ -95,25 +104,25 @@ const asContentTypeId = (value: unknown): string | undefined => {
 const isTagTopic = (topic: string | null) =>
 	typeof topic === "string" && /\.tag\./i.test(topic);
 
-const readWebhookTarget = async (request: Request): Promise<WebhookTarget> => {
-	const topic = request.headers.get("x-contentful-topic");
-
-	try {
-		const body = (await request.json()) as ContentfulWebhookBody;
-		const isTag = isTagTopic(topic) || body?.sys?.type === "Tag";
-		if (isTag) return { isTag: true };
-
-		return {
-			isTag: false,
-			entryId:
-				asEntryId(body?.sys?.id) ??
-				asEntryId(body?.entryId) ??
-				asEntryId(body?.entityId),
-			contentTypeId: asContentTypeId(body?.sys?.contentType?.sys?.id),
-		};
-	} catch {
+const readWebhookTarget = (
+	topic: string | null,
+	body: ContentfulWebhookBody | null,
+): WebhookTarget => {
+	if (!body) {
 		return { isTag: isTagTopic(topic) };
 	}
+
+	const isTag = isTagTopic(topic) || body?.sys?.type === "Tag";
+	if (isTag) return { isTag: true };
+
+	return {
+		isTag: false,
+		entryId:
+			asEntryId(body?.sys?.id) ??
+			asEntryId(body?.entryId) ??
+			asEntryId(body?.entityId),
+		contentTypeId: asContentTypeId(body?.sys?.contentType?.sys?.id),
+	};
 };
 
 const revalidateBlog = ({ isTag, entryId }: WebhookTarget) => {
@@ -144,6 +153,15 @@ const revalidateManifesto = () => {
 	return ["/manifesto"];
 };
 
+const parseJsonBody = (rawBody: string): ContentfulWebhookBody | null => {
+	if (!rawBody) return null;
+	try {
+		return JSON.parse(rawBody) as ContentfulWebhookBody;
+	} catch {
+		return null;
+	}
+};
+
 export async function POST(request: Request) {
 	const expected = env.REVALIDATE_SECRET;
 	if (!expected) {
@@ -172,7 +190,30 @@ export async function POST(request: Request) {
 		return unauthorized();
 	}
 
-	const target = await readWebhookTarget(request);
+	// Raw body is required for HMAC verification (must match bytes Contentful signed).
+	const rawBody = await request.text();
+	const requestUrl = new URL(request.url);
+	const requestPath = `${requestUrl.pathname}${requestUrl.search}`;
+
+	const signingSecrets = parseContentfulSigningSecrets(
+		env.CONTENTFUL_WEBHOOK_SIGNING_SECRET,
+	);
+	if (signingSecrets.length > 0) {
+		const verified = verifyContentfulWebhookRequest({
+			secrets: signingSecrets,
+			method: request.method,
+			path: requestPath,
+			headers: request.headers,
+			rawBody,
+			ttlSeconds: CONTENTFUL_SIGNATURE_TTL_SECONDS,
+		});
+		if (!verified.ok) {
+			return unauthorized(verified.reason);
+		}
+	}
+
+	const topic = request.headers.get("x-contentful-topic");
+	const target = readWebhookTarget(topic, parseJsonBody(rawBody));
 	const paths: string[] = [];
 
 	if (target.isTag) {

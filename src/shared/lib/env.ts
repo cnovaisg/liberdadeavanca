@@ -76,6 +76,12 @@ const envSchema = z.object({
 	CONTENTFUL_API_BASE_URL: optionalContentfulBaseUrl,
 	/** Content Delivery API (CDA) or Preview token — never a Management (CMA) token. */
 	CONTENTFUL_API_ACCESS_TOKEN: optionalString,
+	/**
+	 * Space-level webhook signing secret(s) from Contentful
+	 * (Settings → Webhooks → Settings → Enable request verification).
+	 * Comma-separated for key rotation. Each secret must be 64 chars.
+	 */
+	CONTENTFUL_WEBHOOK_SIGNING_SECRET: optionalString,
 	REVALIDATE_SECRET: optionalString,
 	ACCOUNT_MAIL: optionalEmail,
 	SOCIAL_DATA_X_ACCOUNT: optionalString,
@@ -90,6 +96,8 @@ function loadEnv(): Env {
 		CONTENTFUL_SPACE_ID: process.env.CONTENTFUL_SPACE_ID,
 		CONTENTFUL_API_BASE_URL: process.env.CONTENTFUL_API_BASE_URL,
 		CONTENTFUL_API_ACCESS_TOKEN: process.env.CONTENTFUL_API_ACCESS_TOKEN,
+		CONTENTFUL_WEBHOOK_SIGNING_SECRET:
+			process.env.CONTENTFUL_WEBHOOK_SIGNING_SECRET,
 		REVALIDATE_SECRET: process.env.REVALIDATE_SECRET,
 		ACCOUNT_MAIL: process.env.ACCOUNT_MAIL,
 		SOCIAL_DATA_X_ACCOUNT: process.env.SOCIAL_DATA_X_ACCOUNT,

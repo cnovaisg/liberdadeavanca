@@ -24,6 +24,7 @@ Set these in `.env.local` (copy from `.env.example`). Same keys in the Vercel pr
 | `CONTENTFUL_SPACE_ID` | Contentful space id |
 | `CONTENTFUL_API_BASE_URL` | Delivery host only: `https://cdn.contentful.com` (or Preview: `https://preview.contentful.com`). Never `api.contentful.com` |
 | `CONTENTFUL_API_ACCESS_TOKEN` | Contentful **Content Delivery** (or Preview) token — not Management (CMA) |
+| `CONTENTFUL_WEBHOOK_SIGNING_SECRET` | Space-level webhook HMAC secret (Settings → Webhooks → Settings). Optional until request verification is enabled; then required. Comma-separate two secrets during rotation |
 | `REVALIDATE_SECRET` | Shared secret for the on-demand revalidation webhook |
 | `ACCOUNT_MAIL` | Contact address for the mailto icon |
 | `SOCIAL_DATA_X_ACCOUNT` | X/Twitter handle for the homepage feed |
@@ -35,8 +36,9 @@ Set these in `.env.local` (copy from `.env.example`). Same keys in the Vercel pr
 If a secret may have leaked (chat, logs, old webhook URL with `?secret=`), rotate it:
 
 1. **`REVALIDATE_SECRET`** — generate a new random value, update Vercel (Production + Preview), update the Contentful webhook header, remove any old query-string secret from the webhook URL.
-2. **`CONTENTFUL_API_ACCESS_TOKEN`** — in Contentful create a new Delivery API token, put it in Vercel/`.env.local`, revoke the old token.
-3. **`SOCIAL_DATA_API_KEY`** — regenerate in SocialData, update Vercel/`.env.local`, revoke the old key.
+2. **`CONTENTFUL_WEBHOOK_SIGNING_SECRET`** — in Contentful Webhooks → Settings, rotate the signing secret; keep both old and new in Vercel (comma-separated) until Contentful only signs with the new one; then drop the old.
+3. **`CONTENTFUL_API_ACCESS_TOKEN`** — in Contentful create a new Delivery API token, put it in Vercel/`.env.local`, revoke the old token.
+4. **`SOCIAL_DATA_API_KEY`** — regenerate in SocialData, update Vercel/`.env.local`, revoke the old key.
 
 Redeploy after changing Vercel env vars.
 
@@ -51,6 +53,15 @@ Blog pages cache Contentful fetches for 60 seconds and also accept on-demand rev
    (or `Authorization: Bearer <REVALIDATE_SECRET>`).
 5. Method: **POST** only. Triggers: Entry **Publish**, **Unpublish**, and **Delete** (content types `blogPost` and `manifesto`). Tag **Create**, **Save**, and **Delete** are optional: they refresh a renamed tag immediately. Without them, the new name still appears within 60 seconds.
 6. On success the route revalidates `/blog`, filtered listings under `/blog/tag/[tagId]`, and, when the payload includes a valid entry id, `/blog/[postId]`. Manifesto publishes revalidate `/manifesto`. Tag events also revalidate every `/blog/[postId]` page.
+
+### Request verification (HMAC)
+
+Strongly recommended. Proves the POST was signed by Contentful for your space:
+
+1. Contentful: **Settings → Webhooks → Settings tab → Enable request verification**.
+2. Copy the 64-character signing secret (shown once).
+3. Vercel: set `CONTENTFUL_WEBHOOK_SIGNING_SECRET` (Production + Preview) to that value, then redeploy.
+4. When the env var is set, `/api/revalidate` requires valid `x-contentful-signature` / `x-contentful-signed-headers` / `x-contentful-timestamp` (60s TTL) **in addition to** `x-revalidate-secret`.
 
 Do not put the secret in the query string — it can leak via logs and referrers.
 
