@@ -8,18 +8,31 @@ type LinkType = {
 	icon: ReactNode;
 };
 
-const X_PROFILE_HANDLE = "aLibAvancaPT";
-const MAIL = env.ACCOUNT_MAIL;
-
-const xUrl = `https://x.com/${X_PROFILE_HANDLE}`;
-const mailUrl = `mailto:${MAIL}`;
+const xHandle = env.SOCIAL_DATA_X_ACCOUNT?.replace(/^@/, "");
+const mail = env.ACCOUNT_MAIL;
 
 const LINKS: LinkType[] = [
-	{ url: xUrl, icon: <XIcon scale={0.75} /> },
-	{ url: mailUrl, icon: <MailIcon scale={0.75} /> },
+	...(xHandle
+		? [
+				{
+					url: `https://x.com/${xHandle}`,
+					icon: <XIcon scale={0.75} />,
+				},
+			]
+		: []),
+	...(mail
+		? [
+				{
+					url: `mailto:${mail}`,
+					icon: <MailIcon scale={0.75} />,
+				},
+			]
+		: []),
 ];
 
 const SocialMediaSegment = () => {
+	if (LINKS.length === 0) return null;
+
 	return (
 		<div className="pe-4 flex space-x-2 text-emerald-700">
 			{LINKS.map((link: LinkType, index: number) => {

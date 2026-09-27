@@ -131,15 +131,6 @@ class BlogService {
 		);
 	}
 
-	async getAllBlogPosts(): Promise<PrunedBlogPostType[]> {
-		const [data, tagNamesById] = await Promise.all([
-			this.fetchEntries(),
-			this.getTagNamesById(),
-		]);
-
-		return this.mapPosts(data, tagNamesById);
-	}
-
 	/**
 	 * Posts that carry the public tag `tagId`, plus the resolved tag when the
 	 * id exists in the Delivery API tag catalog.

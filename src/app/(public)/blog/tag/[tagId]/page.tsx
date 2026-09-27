@@ -24,12 +24,17 @@ export async function generateMetadata({
 	};
 }
 
+const BlogTagList = async ({ tagId }: { tagId: string }) => {
+	const { posts, tag } = await blogService.getPostsByTag(tagId);
+	return <Blog posts={posts} tag={tag} filtered />;
+};
+
 const BlogTagPage = async ({ params }: BlogTagPageProps) => {
 	const { tagId } = await params;
 
 	return (
 		<Suspense fallback={<Spinner />}>
-			<Blog tagId={tagId} />
+			<BlogTagList tagId={tagId} />
 		</Suspense>
 	);
 };
