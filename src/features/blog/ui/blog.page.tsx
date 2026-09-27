@@ -1,10 +1,13 @@
 import Link from "next/link";
-import blogService from "../services/blog.service";
-import type { BlogTag } from "../types";
+import type { BlogTag, PrunedBlogPostType } from "../types";
 import PostSummary from "./subcomponents/post-summary";
 
 type BlogProps = {
-	tagId?: string;
+	posts: PrunedBlogPostType[];
+	/** When set, the page is a tag-filtered listing. */
+	tag?: BlogTag | null;
+	/** True when the visitor opened `/blog/tag/...` (even if the tag is unknown). */
+	filtered?: boolean;
 };
 
 const clearFilterClassName =
@@ -33,13 +36,7 @@ const emptyFilterMessage = (tag: BlogTag | null) => {
 	return "Nenhum artigo com esta etiqueta.";
 };
 
-const Blog = async ({ tagId }: BlogProps) => {
-	const filtered = await (tagId
-		? blogService.getPostsByTag(tagId)
-		: Promise.resolve(null));
-	const posts = filtered
-		? filtered.posts
-		: await blogService.getLatestBlogPosts(20);
+const Blog = ({ posts, tag = null, filtered = false }: BlogProps) => {
 	const [featured, ...rest] = posts;
 
 	if (!featured) {
@@ -49,10 +46,10 @@ const Blog = async ({ tagId }: BlogProps) => {
 					<h1 className="text-5xl text-emerald-900 tracking-wider font-anton">
 						BLOG
 					</h1>
-					{tagId ? <TagFilterNotice tag={filtered?.tag ?? null} /> : null}
+					{filtered ? <TagFilterNotice tag={tag} /> : null}
 					<p className="font-geist text-zinc-700">
-						{tagId
-							? emptyFilterMessage(filtered?.tag ?? null)
+						{filtered
+							? emptyFilterMessage(tag)
 							: "Ainda não há artigos publicados."}
 					</p>
 				</div>
@@ -63,7 +60,7 @@ const Blog = async ({ tagId }: BlogProps) => {
 	return (
 		<div className="flex flex-col w-full h-full shrink-0 overflow-y-auto">
 			<div className="pt-8 flex flex-col space-y-10 pb-10">
-				{tagId ? <TagFilterNotice tag={filtered?.tag ?? null} /> : null}
+				{filtered ? <TagFilterNotice tag={tag} /> : null}
 
 				<PostSummary post={featured} featured />
 

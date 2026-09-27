@@ -1,11 +1,12 @@
-import Authors from "@/shared/ui/components/authors/authors";
-import LabelValue from "@/shared/ui/components/label-value/label-value";
+import ArticleInfo from "@/shared/ui/sections/article-info/article-info.section";
 import Paragraphs from "@/shared/ui/sections/paragraphs/paragraphs.section";
-import manifestoService from "../services/manifesto.service";
+import type { PrunedManifestoEntryType } from "../types";
 
-const Manifesto = async () => {
-	const manifesto = await manifestoService.getManifesto();
+type ManifestoProps = {
+	manifesto: PrunedManifestoEntryType | null;
+};
 
+const Manifesto = ({ manifesto }: ManifestoProps) => {
 	if (!manifesto) {
 		return (
 			<div className="flex flex-col w-full h-full shrink-0 overflow-y-auto">
@@ -21,26 +22,8 @@ const Manifesto = async () => {
 		);
 	}
 
-	const authors = manifesto.authors;
 	const intro = manifesto.intro ?? [];
 	const mainContent = manifesto.value ?? [];
-
-	const parsedPublicationDate = new Date(
-		manifesto.createdAt,
-	).toLocaleDateString("pt-PT", {
-		day: "numeric",
-		month: "long",
-		year: "numeric",
-	});
-
-	const parsedRevisionDate = new Date(manifesto.updatedAt).toLocaleDateString(
-		"pt-PT",
-		{
-			day: "numeric",
-			month: "long",
-			year: "numeric",
-		},
-	);
 
 	return (
 		<div className="flex flex-col w-full h-full shrink-0 overflow-y-auto">
@@ -54,21 +37,11 @@ const Manifesto = async () => {
 					</h2>
 				</div>
 
-				<div className="flex flex-col">
-					<div className="flex flex-col space-x-2">
-						<div className="flex items-center space-x-5">
-							<Authors authors={authors ?? []} />
-							<LabelValue
-								label="criado:"
-								value={parsedPublicationDate.toLowerCase()}
-							/>
-							<LabelValue
-								label="revisto:"
-								value={parsedRevisionDate.toLowerCase()}
-							/>
-						</div>
-					</div>
-				</div>
+				<ArticleInfo
+					authors={manifesto.authors}
+					createdAt={manifesto.createdAt}
+					updatedAt={manifesto.updatedAt}
+				/>
 			</div>
 			{intro.length > 0 ? (
 				<div className="pt-8">
