@@ -12,8 +12,6 @@ const optionalString = z.preprocess(
 	z.string().min(1).optional(),
 );
 
-const optionalUrl = z.preprocess(emptyToUndefined, z.string().url().optional());
-
 const optionalEmail = z.preprocess(
 	emptyToUndefined,
 	z.string().email().optional(),
@@ -24,6 +22,9 @@ export const CONTENTFUL_READ_HOSTS = new Set([
 	"cdn.contentful.com",
 	"preview.contentful.com",
 ]);
+
+/** SocialData API hosts — keep fetch targets explicit (SSRF hygiene). */
+export const SOCIAL_DATA_ALLOWED_HOSTS = new Set(["api.socialdata.tools"]);
 
 const optionalContentfulBaseUrl = z.preprocess(
 	emptyToUndefined,
@@ -46,6 +47,26 @@ const optionalContentfulBaseUrl = z.preprocess(
 		.optional(),
 );
 
+const optionalSocialDataBaseUrl = z.preprocess(
+	emptyToUndefined,
+	z
+		.string()
+		.url()
+		.refine(
+			(value) => {
+				try {
+					return SOCIAL_DATA_ALLOWED_HOSTS.has(new URL(value).hostname);
+				} catch {
+					return false;
+				}
+			},
+			{
+				message: "Must be a SocialData host (api.socialdata.tools)",
+			},
+		)
+		.optional(),
+);
+
 /**
  * All secrets/config are optional so local/CI builds work without `.env.local`.
  * When a value *is* present, Zod still validates shape (URL, email, non-empty).
@@ -58,7 +79,7 @@ const envSchema = z.object({
 	REVALIDATE_SECRET: optionalString,
 	ACCOUNT_MAIL: optionalEmail,
 	SOCIAL_DATA_X_ACCOUNT: optionalString,
-	SOCIAL_DATA_BASE_URL: optionalUrl,
+	SOCIAL_DATA_BASE_URL: optionalSocialDataBaseUrl,
 	SOCIAL_DATA_API_KEY: optionalString,
 });
 
@@ -115,6 +136,13 @@ export function getSocialDataCredentials() {
 
 	if (!account || !baseUrl || !apiKey) {
 		return null;
+	}
+
+	const hostname = new URL(baseUrl).hostname;
+	if (!SOCIAL_DATA_ALLOWED_HOSTS.has(hostname)) {
+		throw new Error(
+			`Refusing SocialData host "${hostname}". Allowed: ${[...SOCIAL_DATA_ALLOWED_HOSTS].join(", ")}.`,
+		);
 	}
 
 	return {
