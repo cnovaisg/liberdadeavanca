@@ -17,6 +17,7 @@ import {
 	BLOG_REVALIDATE_SECONDS,
 	BLOG_TAGS_CACHE_TAG,
 	blogPostCacheTag,
+	isBlogPostId,
 	isBlogTagId,
 } from "./blog.cache";
 
@@ -99,18 +100,23 @@ class BlogService {
 	}
 
 	async getPostById(id: string): Promise<PrunedBlogPostType | null> {
+		const normalized = id.trim();
+		if (!isBlogPostId(normalized)) {
+			return null;
+		}
+
 		const [data, tagNamesById] = await Promise.all([
 			fetchContentfulEntries<BlogPostEntryType>({
 				contentType: "blogPost",
 				searchParams: {
-					"sys.id": id,
+					"sys.id": normalized,
 					locale: "en-US",
 					include: "2",
 					limit: "1",
 				},
 				next: {
 					revalidate: BLOG_REVALIDATE_SECONDS,
-					tags: [BLOG_CACHE_TAG, blogPostCacheTag(id)],
+					tags: [BLOG_CACHE_TAG, blogPostCacheTag(normalized)],
 				},
 			}),
 			this.getTagNamesById(),

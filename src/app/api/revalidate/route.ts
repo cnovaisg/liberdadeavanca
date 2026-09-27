@@ -7,7 +7,15 @@ import {
 	blogPostCacheTag,
 } from "@/features/blog/services/blog.cache";
 import { MANIFESTO_CACHE_TAG } from "@/features/manifesto/services/manifesto.cache";
+import { isContentfulId } from "@/shared/lib/contentful/ids";
 import { env } from "@/shared/lib/env";
+import { checkRateLimit, clientIpFromRequest } from "@/shared/lib/rate-limit";
+
+/** Soft per-IP cap (in-memory; best-effort across serverless isolates). */
+const REVALIDATE_RATE_LIMIT = {
+	windowMs: 60_000,
+	max: 30,
+} as const;
 
 /**
  * On-demand cache revalidation for Contentful publishes.
@@ -47,9 +55,6 @@ type WebhookTarget = {
 	contentTypeId?: string;
 };
 
-/** Contentful entry ids are alphanumeric (optionally with `_` / `-`). */
-const ENTRY_ID_PATTERN = /^[a-zA-Z0-9_-]{1,64}$/;
-
 const unauthorized = () =>
 	NextResponse.json(
 		{ revalidated: false, message: "Unauthorized" },
@@ -78,13 +83,13 @@ const readProvidedSecret = (request: Request) => {
 const asEntryId = (value: unknown): string | undefined => {
 	if (typeof value !== "string") return undefined;
 	const id = value.trim();
-	return ENTRY_ID_PATTERN.test(id) ? id : undefined;
+	return isContentfulId(id) ? id : undefined;
 };
 
 const asContentTypeId = (value: unknown): string | undefined => {
 	if (typeof value !== "string") return undefined;
 	const id = value.trim();
-	return ENTRY_ID_PATTERN.test(id) ? id : undefined;
+	return isContentfulId(id) ? id : undefined;
 };
 
 const isTagTopic = (topic: string | null) =>
@@ -145,6 +150,20 @@ export async function POST(request: Request) {
 		return NextResponse.json(
 			{ revalidated: false, message: "REVALIDATE_SECRET is not configured" },
 			{ status: 500 },
+		);
+	}
+
+	const ip = clientIpFromRequest(request);
+	const rate = checkRateLimit(`revalidate:${ip}`, REVALIDATE_RATE_LIMIT);
+	if (rate.limited) {
+		return NextResponse.json(
+			{ revalidated: false, message: "Too many requests" },
+			{
+				status: 429,
+				headers: {
+					"Retry-After": String(rate.retryAfterSeconds),
+				},
+			},
 		);
 	}
 

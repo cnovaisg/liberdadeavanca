@@ -27,7 +27,7 @@ Set these in `.env.local` (copy from `.env.example`). Same keys in the Vercel pr
 | `REVALIDATE_SECRET` | Shared secret for the on-demand revalidation webhook |
 | `ACCOUNT_MAIL` | Contact address for the mailto icon |
 | `SOCIAL_DATA_X_ACCOUNT` | X/Twitter handle for the homepage feed |
-| `SOCIAL_DATA_BASE_URL` | SocialData API host, typically `https://api.socialdata.tools` |
+| `SOCIAL_DATA_BASE_URL` | SocialData API host — only `https://api.socialdata.tools` (allowlisted) |
 | `SOCIAL_DATA_API_KEY` | SocialData API key |
 
 ### Rotating secrets
@@ -53,6 +53,8 @@ Blog pages cache Contentful fetches for 60 seconds and also accept on-demand rev
 6. On success the route revalidates `/blog`, filtered listings under `/blog/tag/[tagId]`, and, when the payload includes a valid entry id, `/blog/[postId]`. Manifesto publishes revalidate `/manifesto`. Tag events also revalidate every `/blog/[postId]` page.
 
 Do not put the secret in the query string — it can leak via logs and referrers.
+
+The route applies a soft per-IP rate limit (30 requests / minute, in-memory). Over the limit it returns **429**. For a hard global cap, add a Vercel Firewall rule or an external store (e.g. Upstash).
 
 ## Contentful public tags
 
