@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Anton, Geist } from "next/font/google";
 import { headers } from "next/headers";
 import "./globals.css";
+import { SITE_UI_LOCALE } from "@/shared/lib/contentful/locale";
 import MainLayout from "@/shared/ui/layouts/main.layout";
 
 const geist = Geist({
@@ -32,7 +33,10 @@ export default async function RootLayout({
 	await headers();
 
 	return (
-		<html lang="pt-PT" className={`${geist.variable} ${anton.variable}`}>
+		<html
+			lang={SITE_UI_LOCALE}
+			className={`${geist.variable} ${anton.variable}`}
+		>
 			<body className="font-geist">
 				<MainLayout>{children}</MainLayout>
 			</body>

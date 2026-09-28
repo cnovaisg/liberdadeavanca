@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import blogService from "@/features/blog/services/blog.service";
-import BlogPost from "@/features/blog/ui/blog-post.page";
+import { BlogPost, blogService } from "@/features/blog";
 
 type BlogPageProps = {
 	params: Promise<{ postId: string }>;

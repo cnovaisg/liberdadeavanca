@@ -1,5 +1,6 @@
 import { resolveAuthors } from "@/shared/lib/contentful/authors";
 import { fetchContentfulEntries } from "@/shared/lib/contentful/client";
+import { getContentfulLocale } from "@/shared/lib/contentful/locale";
 import { parseRichTextField } from "@/shared/lib/contentful/rich-text";
 import {
 	buildTagMap,
@@ -65,7 +66,7 @@ class BlogService {
 		return fetchContentfulEntries<BlogPostEntryType>({
 			contentType: "blogPost",
 			searchParams: {
-				locale: "en-US",
+				locale: getContentfulLocale(),
 				include: "2",
 				order: "-sys.createdAt",
 				...(limit ? { limit: limit.toString() } : {}),
@@ -110,7 +111,7 @@ class BlogService {
 				contentType: "blogPost",
 				searchParams: {
 					"sys.id": normalized,
-					locale: "en-US",
+					locale: getContentfulLocale(),
 					include: "2",
 					limit: "1",
 				},
@@ -148,7 +149,7 @@ class BlogService {
 			fetchContentfulEntries<BlogPostEntryType>({
 				contentType: "blogPost",
 				searchParams: {
-					locale: "en-US",
+					locale: getContentfulLocale(),
 					include: "2",
 					order: "-sys.createdAt",
 					limit: "100",

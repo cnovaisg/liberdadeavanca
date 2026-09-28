@@ -1,4 +1,4 @@
-import Landing from "@/features/landing/ui/landing.page";
+import { Landing } from "@/features/landing";
 
 export default function Home() {
 	return <Landing />;

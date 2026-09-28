@@ -1,5 +1,6 @@
 import { resolveAuthors } from "@/shared/lib/contentful/authors";
 import { fetchContentfulEntries } from "@/shared/lib/contentful/client";
+import { getContentfulLocale } from "@/shared/lib/contentful/locale";
 import { parseRichTextField } from "@/shared/lib/contentful/rich-text";
 import type { ManifestoEntryType, PrunedManifestoEntryType } from "../types";
 import {
@@ -38,7 +39,7 @@ class ManifestoService {
 		const data = await fetchContentfulEntries<ManifestoEntryType>({
 			contentType: "manifesto",
 			searchParams: {
-				locale: "en-US",
+				locale: getContentfulLocale(),
 				limit: "1",
 				include: "2",
 			},

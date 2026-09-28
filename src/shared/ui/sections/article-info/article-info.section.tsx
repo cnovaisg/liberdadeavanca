@@ -1,10 +1,11 @@
 import type { ReactNode } from "react";
-import type { AuthorType } from "../../components/authors/authors";
+import type { Author } from "@/shared/lib/author";
+import { SITE_UI_LOCALE } from "@/shared/lib/contentful/locale";
 import Authors from "../../components/authors/authors";
 import LabelValue from "../../components/label-value/label-value";
 
 type ArticleInfoProps = {
-	authors: AuthorType[];
+	authors: Author[];
 	createdAt: string;
 	updatedAt: string;
 	tags?: ReactNode;
@@ -17,7 +18,7 @@ const ArticleInfo = ({
 	tags,
 }: ArticleInfoProps) => {
 	const parsedPublicationDate = new Date(createdAt).toLocaleDateString(
-		"pt-PT",
+		SITE_UI_LOCALE,
 		{
 			day: "numeric",
 			month: "long",
@@ -25,11 +26,14 @@ const ArticleInfo = ({
 		},
 	);
 
-	const parsedRevisionDate = new Date(updatedAt).toLocaleDateString("pt-PT", {
-		day: "numeric",
-		month: "long",
-		year: "numeric",
-	});
+	const parsedRevisionDate = new Date(updatedAt).toLocaleDateString(
+		SITE_UI_LOCALE,
+		{
+			day: "numeric",
+			month: "long",
+			year: "numeric",
+		},
+	);
 
 	return (
 		<div className="flex flex-wrap items-center gap-x-5 gap-y-2">

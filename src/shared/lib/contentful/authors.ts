@@ -1,13 +1,10 @@
-import type {
-	ContentfulAuthor,
-	ContentfulAuthorField,
-	ContentfulIncludes,
-} from "./types";
+import type { Author } from "@/shared/lib/author";
+import type { ContentfulAuthorField, ContentfulIncludes } from "./types";
 
 export function resolveAuthors(
 	authors: ContentfulAuthorField[] | undefined,
 	includes?: ContentfulIncludes,
-): ContentfulAuthor[] {
+): Author[] {
 	const linkedEntries = includes?.Entry ?? [];
 	if (!authors?.length) return [];
 
@@ -34,5 +31,5 @@ export function resolveAuthors(
 
 			return null;
 		})
-		.filter((author): author is ContentfulAuthor => author !== null);
+		.filter((author): author is Author => author !== null);
 }
