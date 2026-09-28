@@ -9,7 +9,7 @@ const Notice = () => {
 			className="font-geist text-[9px] tracking-wide text-zinc-100 w-48 shrink-0"
 			suppressHydrationWarning
 		>
-			© ${yearSpan} Carlos Novais. Todos os direitos reservados.
+			© {yearSpan} Carlos Novais. Todos os direitos reservados.
 		</div>
 	);
 };
