@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import type { Author } from "@/shared/lib/author";
-import { SITE_UI_LOCALE } from "@/shared/lib/contentful/locale";
+import { SITE_UI_LOCALE } from "@/shared/lib/site";
 import Authors from "../../components/authors/authors";
 import LabelValue from "../../components/label-value/label-value";
 

@@ -1,4 +1,5 @@
 import { getSocialDataCredentials } from "@/shared/lib/env";
+import { SITE_UI_LOCALE } from "@/shared/lib/site";
 
 /**
  * Data Cache TTL for SocialData. The homepage stays dynamic because of the
@@ -17,7 +18,7 @@ type SocialDataTweet = {
 const LISBON_TIME_ZONE = "Europe/Lisbon";
 const MISSING_DATE_PART = "—";
 
-const lisbonDateTime = new Intl.DateTimeFormat("pt-PT", {
+const lisbonDateTime = new Intl.DateTimeFormat(SITE_UI_LOCALE, {
 	timeZone: LISBON_TIME_ZONE,
 	hour: "2-digit",
 	minute: "2-digit",

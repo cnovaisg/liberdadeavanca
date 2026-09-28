@@ -1,9 +1,6 @@
 import type { Author } from "@/shared/lib/author";
 import LabelValue from "../label-value/label-value";
 
-/** @deprecated Prefer importing `Author` from `@/shared/lib/author`. */
-export type AuthorType = Author;
-
 export type AuthorsProps = {
 	authors: Author[];
 };

@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Anton, Geist } from "next/font/google";
 import { headers } from "next/headers";
 import "./globals.css";
-import { SITE_UI_LOCALE } from "@/shared/lib/contentful/locale";
+import { SITE_UI_LOCALE } from "@/shared/lib/site";
 import MainLayout from "@/shared/ui/layouts/main.layout";
 
 const geist = Geist({

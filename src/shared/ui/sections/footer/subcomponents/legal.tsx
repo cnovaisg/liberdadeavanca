@@ -1,7 +1,9 @@
+import { SITE_UI_LOCALE } from "@/shared/lib/site";
+
 const Legal = () => {
 	return (
 		<div
-			lang="pt-PT"
+			lang={SITE_UI_LOCALE}
 			className="leading-2.5 font-geist font-light text-[7px] tracking-wide text-zinc-100 break-words [hyphens:auto] "
 		>
 			O conteúdo deste website é da exclusiva responsabilidade de Carlos Novais.

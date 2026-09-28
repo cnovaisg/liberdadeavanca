@@ -5,8 +5,8 @@ import {
 	BLOG_CACHE_TAG,
 	BLOG_TAGS_CACHE_TAG,
 	blogPostCacheTag,
-} from "@/features/blog/services/blog.cache";
-import { MANIFESTO_CACHE_TAG } from "@/features/manifesto/services/manifesto.cache";
+} from "@/features/blog";
+import { MANIFESTO_CACHE_TAG } from "@/features/manifesto";
 import { isContentfulId } from "@/shared/lib/contentful/ids";
 import { mustRequireWebhookHmac } from "@/shared/lib/contentful/webhook-policy";
 import {
