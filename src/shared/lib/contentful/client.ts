@@ -54,6 +54,8 @@ export async function fetchContentfulEntries<T>(
 	}
 
 	if (!response.ok) {
+		// Bubble up so /blog, articles and /manifesto hit their error boundary
+		// instead of a generic 500. Tag catalog failures are handled separately.
 		throw new Error(
 			`Contentful API error: ${response.status} ${response.statusText}`,
 		);

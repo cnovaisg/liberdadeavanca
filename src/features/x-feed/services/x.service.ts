@@ -1,10 +1,60 @@
 import { getSocialDataCredentials } from "@/shared/lib/env";
+import { X_FEED_CACHE_TAG, X_FEED_REVALIDATE_SECONDS } from "./x.cache";
 
 type SocialDataTweet = {
 	tweet_created_at?: string;
 	full_text?: string;
 	id_str?: string;
 };
+
+const LISBON_TIME_ZONE = "Europe/Lisbon";
+const MISSING_DATE_PART = "—";
+
+const lisbonDateTime = new Intl.DateTimeFormat("pt-PT", {
+	timeZone: LISBON_TIME_ZONE,
+	hour: "2-digit",
+	minute: "2-digit",
+	day: "2-digit",
+	month: "2-digit",
+	hourCycle: "h23",
+});
+
+const readPart = (
+	parts: Intl.DateTimeFormatPart[],
+	type: Intl.DateTimeFormatPartTypes,
+) => parts.find((part) => part.type === type)?.value;
+
+/**
+ * Clock time in Europe/Lisbon. `Date#getHours()` is the server zone (UTC on
+ * Vercel), so a post at 00:30 in Lisbon was shown an hour early in summer.
+ * Missing or unparseable timestamps stay as em dashes — never `NaN:NaN`.
+ */
+export function formatTweetDate(rawDate?: string): {
+	hour: string;
+	day: string;
+} {
+	const fallback = { hour: MISSING_DATE_PART, day: MISSING_DATE_PART };
+	if (!rawDate?.trim()) return fallback;
+
+	const date = new Date(rawDate);
+	if (Number.isNaN(date.getTime())) return fallback;
+
+	const parts = lisbonDateTime.formatToParts(date);
+	const hour = readPart(parts, "hour");
+	const minute = readPart(parts, "minute");
+	const day = readPart(parts, "day");
+	const month = readPart(parts, "month");
+
+	if (!hour || !minute || !day || !month) return fallback;
+	if ([hour, minute, day, month].some((part) => part.includes("NaN"))) {
+		return fallback;
+	}
+
+	return {
+		hour: `${hour}:${minute}`,
+		day: `${day}/${month}`,
+	};
+}
 
 class SocialDataXService {
 	private getConfig() {
@@ -29,16 +79,24 @@ class SocialDataXService {
 	}
 
 	private async getJson(url: string, headers: { [key: string]: string }) {
-		const response = await fetch(url, {
-			method: "GET",
-			headers,
-			cache: "no-store",
-		});
-		const data = await response.json();
-		if (!response.ok) {
-			console.error("X feed request failed", response.status);
+		try {
+			const response = await fetch(url, {
+				method: "GET",
+				headers,
+				next: {
+					revalidate: X_FEED_REVALIDATE_SECONDS,
+					tags: [X_FEED_CACHE_TAG],
+				},
+			});
+			if (!response.ok) {
+				console.error("X feed request failed", response.status);
+				return null;
+			}
+			return await response.json();
+		} catch (error) {
+			console.error("X feed request failed", error);
+			return null;
 		}
-		return data;
 	}
 
 	private async getXfeed(
@@ -80,19 +138,8 @@ class SocialDataXService {
 			const postprocessedResults =
 				results?.tweets
 					?.map((tweet: SocialDataTweet) => {
-						const rawDate = tweet.tweet_created_at;
-						const date = rawDate ? new Date(rawDate) : new Date(Number.NaN);
-						const hours = date.getHours().toString().padStart(2, "0");
-						const minutes = date.getMinutes().toString().padStart(2, "0");
-						const day = date.getDate().toString().padStart(2, "0");
-						const month = (date.getMonth() + 1).toString().padStart(2, "0");
-						const parsedDate = {
-							hour: `${hours}:${minutes}`,
-							day: `${day}/${month}`,
-						};
-
 						return {
-							date: parsedDate,
+							date: formatTweetDate(tweet.tweet_created_at),
 							text: tweet.full_text,
 							id: tweet.id_str,
 						};
