@@ -1,5 +1,6 @@
+import { hasRichText } from "@/shared/lib/contentful/rich-text";
+import RichText from "@/shared/ui/components/rich-text/rich-text";
 import ArticleInfo from "@/shared/ui/sections/article-info/article-info.section";
-import Paragraphs from "@/shared/ui/sections/paragraphs/paragraphs.section";
 import type { PrunedManifestoEntryType } from "../types";
 
 type ManifestoProps = {
@@ -22,8 +23,7 @@ const Manifesto = ({ manifesto }: ManifestoProps) => {
 		);
 	}
 
-	const intro = manifesto.intro ?? [];
-	const mainContent = manifesto.value ?? [];
+	const hasIntro = hasRichText(manifesto.intro);
 
 	return (
 		<div className="flex flex-col w-full h-full shrink-0 overflow-y-auto">
@@ -43,16 +43,13 @@ const Manifesto = ({ manifesto }: ManifestoProps) => {
 					updatedAt={manifesto.updatedAt}
 				/>
 			</div>
-			{intro.length > 0 ? (
+			{hasIntro ? (
 				<div className="pt-8">
-					<Paragraphs paragraphs={intro} />
+					<RichText document={manifesto.intro} />
 				</div>
 			) : null}
-			<div className="flex pt-4 pb-10">
-				<Paragraphs
-					paragraphs={mainContent}
-					initialDelay={intro.length > 0 ? 1 : 0}
-				/>
+			<div className={hasIntro ? "flex pt-4 pb-10" : "flex pt-8 pb-10"}>
+				<RichText document={manifesto.value} />
 			</div>
 		</div>
 	);

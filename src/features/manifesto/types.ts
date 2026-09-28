@@ -1,8 +1,8 @@
+import type { Document } from "@contentful/rich-text-types";
 import type { Author } from "@/shared/lib/author";
 import type {
 	ContentfulAuthorField,
 	ContentfulIncludes,
-	ContentfulParagraph,
 	ContentfulSys,
 } from "@/shared/lib/contentful/types";
 
@@ -32,7 +32,7 @@ export type PrunedManifestoEntryType = {
 	revision: number;
 	title: string;
 	subtitle?: string;
-	intro: ContentfulParagraph[];
-	value: ContentfulParagraph[];
+	intro: Document | null;
+	value: Document | null;
 	authors: Author[];
 };

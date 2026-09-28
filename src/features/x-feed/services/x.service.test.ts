@@ -8,7 +8,10 @@ vi.mock("@/shared/lib/env", () => ({
 	}),
 }));
 
-import socialDataXService, { X_FEED_REVALIDATE_SECONDS } from "./x.service";
+import socialDataXService, {
+	formatTweetDate,
+	X_FEED_REVALIDATE_SECONDS,
+} from "./x.service";
 
 describe("SocialData X feed cache", () => {
 	beforeEach(() => {
@@ -33,7 +36,13 @@ describe("SocialData X feed cache", () => {
 
 		const posts = await socialDataXService.getPostprocessedXfeed();
 
-		expect(posts).toEqual([expect.objectContaining({ text: "olá", id: "1" })]);
+		expect(posts).toEqual([
+			{
+				date: { hour: "11:00", day: "28/09" },
+				text: "olá",
+				id: "1",
+			},
+		]);
 		expect(fetchMock).toHaveBeenCalledOnce();
 
 		const [url, init] = fetchMock.mock.calls[0] ?? [];
@@ -50,5 +59,32 @@ describe("SocialData X feed cache", () => {
 		});
 		expect(init).not.toHaveProperty("cache");
 		expect(X_FEED_REVALIDATE_SECONDS).toBe(60);
+	});
+});
+
+describe("formatTweetDate", () => {
+	it("formata em Europe/Lisbon", () => {
+		expect(formatTweetDate("2026-07-15T12:00:00.000Z")).toEqual({
+			hour: "13:00",
+			day: "15/07",
+		});
+		expect(formatTweetDate("2026-07-15T23:30:00.000Z")).toEqual({
+			hour: "00:30",
+			day: "16/07",
+		});
+		expect(formatTweetDate("2026-01-15T00:30:00.000Z")).toEqual({
+			hour: "00:30",
+			day: "15/01",
+		});
+	});
+
+	it("não produz NaN quando a data falta ou é inválida", () => {
+		const fallback = { hour: "—", day: "—" };
+		expect(formatTweetDate(undefined)).toEqual(fallback);
+		expect(formatTweetDate("")).toEqual(fallback);
+		expect(formatTweetDate("não é uma data")).toEqual(fallback);
+		expect(JSON.stringify(formatTweetDate("não é uma data"))).not.toContain(
+			"NaN",
+		);
 	});
 });

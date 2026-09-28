@@ -14,6 +14,54 @@ type SocialDataTweet = {
 	id_str?: string;
 };
 
+const LISBON_TIME_ZONE = "Europe/Lisbon";
+const MISSING_DATE_PART = "—";
+
+const lisbonDateTime = new Intl.DateTimeFormat("pt-PT", {
+	timeZone: LISBON_TIME_ZONE,
+	hour: "2-digit",
+	minute: "2-digit",
+	day: "2-digit",
+	month: "2-digit",
+	hourCycle: "h23",
+});
+
+const readPart = (
+	parts: Intl.DateTimeFormatPart[],
+	type: Intl.DateTimeFormatPartTypes,
+) => parts.find((part) => part.type === type)?.value;
+
+/**
+ * Clock time in Europe/Lisbon. `Date#getHours()` follows the server zone
+ * (UTC on Vercel). Missing or unparseable timestamps stay as em dashes.
+ */
+export function formatTweetDate(rawDate?: string): {
+	hour: string;
+	day: string;
+} {
+	const fallback = { hour: MISSING_DATE_PART, day: MISSING_DATE_PART };
+	if (!rawDate?.trim()) return fallback;
+
+	const date = new Date(rawDate);
+	if (Number.isNaN(date.getTime())) return fallback;
+
+	const parts = lisbonDateTime.formatToParts(date);
+	const hour = readPart(parts, "hour");
+	const minute = readPart(parts, "minute");
+	const day = readPart(parts, "day");
+	const month = readPart(parts, "month");
+
+	if (!hour || !minute || !day || !month) return fallback;
+	if ([hour, minute, day, month].some((part) => part.includes("NaN"))) {
+		return fallback;
+	}
+
+	return {
+		hour: `${hour}:${minute}`,
+		day: `${day}/${month}`,
+	};
+}
+
 class SocialDataXService {
 	private getConfig() {
 		const credentials = getSocialDataCredentials();
@@ -88,19 +136,8 @@ class SocialDataXService {
 			const postprocessedResults =
 				results?.tweets
 					?.map((tweet: SocialDataTweet) => {
-						const rawDate = tweet.tweet_created_at;
-						const date = rawDate ? new Date(rawDate) : new Date(Number.NaN);
-						const hours = date.getHours().toString().padStart(2, "0");
-						const minutes = date.getMinutes().toString().padStart(2, "0");
-						const day = date.getDate().toString().padStart(2, "0");
-						const month = (date.getMonth() + 1).toString().padStart(2, "0");
-						const parsedDate = {
-							hour: `${hours}:${minutes}`,
-							day: `${day}/${month}`,
-						};
-
 						return {
-							date: parsedDate,
+							date: formatTweetDate(tweet.tweet_created_at),
 							text: tweet.full_text,
 							id: tweet.id_str,
 						};

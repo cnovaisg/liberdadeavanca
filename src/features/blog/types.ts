@@ -1,9 +1,9 @@
+import type { Document } from "@contentful/rich-text-types";
 import type { Author } from "@/shared/lib/author";
 import type { ContentfulTag } from "@/shared/lib/contentful/tags";
 import type {
 	ContentfulAuthorField,
 	ContentfulIncludes,
-	ContentfulParagraph,
 	ContentfulSys,
 } from "@/shared/lib/contentful/types";
 
@@ -50,5 +50,5 @@ export type PrunedBlogPostType = {
 	authors: Author[];
 	/** Public tags with resolved display names. Unresolved ids are omitted. */
 	tags: BlogTag[];
-	value: ContentfulParagraph[];
+	value: Document | null;
 };

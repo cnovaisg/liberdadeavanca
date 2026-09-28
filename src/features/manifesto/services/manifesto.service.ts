@@ -1,7 +1,7 @@
 import { resolveAuthors } from "@/shared/lib/contentful/authors";
 import { fetchContentfulEntries } from "@/shared/lib/contentful/client";
 import { getContentfulLocale } from "@/shared/lib/contentful/locale";
-import { parseRichTextField } from "@/shared/lib/contentful/rich-text";
+import { toRichTextDocument } from "@/shared/lib/contentful/rich-text";
 import type { ManifestoEntryType, PrunedManifestoEntryType } from "../types";
 import {
 	MANIFESTO_CACHE_TAG,
@@ -29,8 +29,8 @@ class ManifestoService {
 			revision,
 			title,
 			subtitle,
-			intro: parseRichTextField(intro),
-			value: parseRichTextField(manifestoContent),
+			intro: toRichTextDocument(intro),
+			value: toRichTextDocument(manifestoContent),
 			authors: resolveAuthors(authors, manifesto.includes),
 		};
 	}
