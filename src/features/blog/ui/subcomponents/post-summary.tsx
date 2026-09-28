@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { richTextExcerpt } from "@/shared/lib/contentful/rich-text";
 import ArticleInfo from "@/shared/ui/sections/article-info/article-info.section";
 import type { PrunedBlogPostType } from "../../types";
 import PostTags from "./post-tags";
@@ -9,6 +10,7 @@ type PostSummaryProps = {
 };
 
 const PostSummary = ({ post, featured = false }: PostSummaryProps) => {
+	const excerpt = richTextExcerpt(post.value);
 	const TitleTag = featured ? "h1" : "h2";
 	const titleId = `post-title-${post.id}`;
 	const titleClass = featured
@@ -46,12 +48,12 @@ const PostSummary = ({ post, featured = false }: PostSummaryProps) => {
 					tags={<PostTags tags={post.tags} />}
 				/>
 
-				{featured && post.value?.[0]?.paragraph ? (
+				{featured && excerpt ? (
 					<p
 						lang="pt"
 						className="hyphens-auto font-geist prose prose-sm prose-zinc font-[500] line-clamp-3"
 					>
-						{post.value[0].paragraph}
+						{excerpt}
 					</p>
 				) : null}
 

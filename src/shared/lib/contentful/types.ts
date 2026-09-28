@@ -25,5 +25,3 @@ export type ContentfulSys = {
 	updatedAt: string;
 	revision: number;
 };
-
-export type ContentfulParagraph = { paragraph: string };

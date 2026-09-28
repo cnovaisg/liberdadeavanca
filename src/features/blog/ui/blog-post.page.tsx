@@ -1,7 +1,6 @@
 import Link from "next/link";
+import RichText from "@/shared/ui/components/rich-text/rich-text";
 import ArticleInfo from "@/shared/ui/sections/article-info/article-info.section";
-import Lines from "@/shared/ui/sections/lines/lines.section";
-import Paragraphs from "@/shared/ui/sections/paragraphs/paragraphs.section";
 import type { PrunedBlogPostType } from "../types";
 import PostTags from "./subcomponents/post-tags";
 
@@ -10,10 +9,6 @@ type BlogPostPageProps = {
 };
 
 const BlogPost = ({ post }: BlogPostPageProps) => {
-	const content = post.value ?? [];
-	const lead = content[0]?.paragraph ?? "";
-	const body = content.slice(1);
-
 	return (
 		<div className="flex flex-col w-full h-full shrink-0 overflow-y-auto">
 			<div className="pt-8 flex flex-col space-y-5 shrink-0">
@@ -44,19 +39,9 @@ const BlogPost = ({ post }: BlogPostPageProps) => {
 				/>
 			</div>
 
-			{lead ? (
-				<div className="pt-8">
-					<Lines paragraph={lead} maxCharsPerLine={45} />
-				</div>
-			) : null}
-
-			{body.length > 0 ? (
-				<div className="flex pt-4 pb-10">
-					<Paragraphs paragraphs={body} initialDelay={1} />
-				</div>
-			) : (
-				<div className="pb-10" />
-			)}
+			<div className="pt-8 pb-10">
+				<RichText document={post.value} />
+			</div>
 		</div>
 	);
 };

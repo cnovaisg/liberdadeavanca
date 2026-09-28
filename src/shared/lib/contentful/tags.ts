@@ -14,37 +14,46 @@ type ContentfulTagsResponse = {
 	items?: ContentfulTagEntry[];
 };
 
-/** Public tags only — private tags are not exposed on the Delivery API. */
+/**
+ * Public tags only — private tags are not exposed on the Delivery API.
+ * Returns `[]` when Contentful is not configured, and `null` when the
+ * request fails so listings can still render posts without etiquetas.
+ */
 export async function fetchPublicTags(options?: {
 	next?: NextFetchRequestConfig;
 	cache?: RequestCache;
-}): Promise<ContentfulTag[]> {
+}): Promise<ContentfulTag[] | null> {
 	const config = getContentfulConfig();
 	if (!config) {
 		return [];
 	}
 
-	const url = new URL(`${config.baseUrl}/tags`);
-	const response = await fetch(url.toString(), {
-		headers: config.headers,
-		next: options?.next,
-		cache: options?.cache,
-	});
+	try {
+		const url = new URL(`${config.baseUrl}/tags`);
+		const response = await fetch(url.toString(), {
+			headers: config.headers,
+			next: options?.next,
+			cache: options?.cache,
+		});
 
-	if (!response.ok) {
-		console.error(
-			"Contentful tags request failed",
-			response.status,
-			response.statusText,
-		);
-		return [];
+		if (!response.ok) {
+			console.error(
+				"Contentful tags request failed",
+				response.status,
+				response.statusText,
+			);
+			return null;
+		}
+
+		const data = (await response.json()) as ContentfulTagsResponse;
+		return (data.items ?? []).map((tag) => ({
+			id: tag.sys.id,
+			name: tag.name,
+		}));
+	} catch (error) {
+		console.error("Contentful tags request failed", error);
+		return null;
 	}
-
-	const data = (await response.json()) as ContentfulTagsResponse;
-	return (data.items ?? []).map((tag) => ({
-		id: tag.sys.id,
-		name: tag.name,
-	}));
 }
 
 export function buildTagMap(tags: ContentfulTag[]): Map<string, string> {

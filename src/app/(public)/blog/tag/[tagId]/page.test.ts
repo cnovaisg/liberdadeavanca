@@ -34,6 +34,25 @@ describe("BlogTagPage", () => {
 		expect(notFound).toHaveBeenCalledOnce();
 	});
 
+	it("mantém a listagem quando o catálogo de etiquetas falha", async () => {
+		vi.mocked(blogService.getPostsByTag).mockResolvedValue({
+			posts: [],
+			tag: null,
+			tagsUnavailable: true,
+		});
+
+		const view = await BlogTagPage({
+			params: Promise.resolve({ tagId: "sociedade" }),
+		});
+
+		expect(notFound).not.toHaveBeenCalled();
+		expect(view.props).toMatchObject({
+			posts: [],
+			tag: null,
+			filtered: true,
+		});
+	});
+
 	it("mantém a listagem quando a etiqueta existe sem artigos", async () => {
 		const tag = { id: "sociedade", name: "Sociedade" };
 		vi.mocked(blogService.getPostsByTag).mockResolvedValue({
