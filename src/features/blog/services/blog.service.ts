@@ -1,5 +1,6 @@
 import { resolveAuthors } from "@/shared/lib/contentful/authors";
 import { fetchContentfulEntries } from "@/shared/lib/contentful/client";
+import { isContentfulId } from "@/shared/lib/contentful/ids";
 import { getContentfulLocale } from "@/shared/lib/contentful/locale";
 import { toRichTextDocument } from "@/shared/lib/contentful/rich-text";
 import {
@@ -18,8 +19,6 @@ import {
 	BLOG_REVALIDATE_SECONDS,
 	BLOG_TAGS_CACHE_TAG,
 	blogPostCacheTag,
-	isBlogPostId,
-	isBlogTagId,
 } from "./blog.cache";
 
 const blogCache: NextFetchRequestConfig = {
@@ -107,7 +106,7 @@ class BlogService {
 
 	async getPostById(id: string): Promise<PrunedBlogPostType | null> {
 		const normalized = id.trim();
-		if (!isBlogPostId(normalized)) {
+		if (!isContentfulId(normalized)) {
 			return null;
 		}
 
@@ -149,7 +148,7 @@ class BlogService {
 		tagsUnavailable?: boolean;
 	}> {
 		const normalized = tagId.trim();
-		if (!isBlogTagId(normalized)) {
+		if (!isContentfulId(normalized)) {
 			return { posts: [], tag: null };
 		}
 

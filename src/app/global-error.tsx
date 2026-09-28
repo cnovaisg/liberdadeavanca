@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import { SITE_UI_LOCALE } from "@/shared/lib/site";
 import "./globals.css";
 
 type GlobalErrorProps = {
@@ -14,7 +15,7 @@ const GlobalError = ({ error, reset }: GlobalErrorProps) => {
 	}, [error]);
 
 	return (
-		<html lang="pt-PT">
+		<html lang={SITE_UI_LOCALE}>
 			<body className="bg-white text-black">
 				<div
 					role="alert"
