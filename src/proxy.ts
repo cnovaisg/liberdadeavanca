@@ -15,7 +15,7 @@ export function proxy(request: NextRequest) {
 		default-src 'self';
 		script-src 'self' 'nonce-${nonce}' 'strict-dynamic'${isDev ? " 'unsafe-eval'" : ""};
 		style-src 'self' 'unsafe-inline';
-		img-src 'self' data: blob: https://res.cloudinary.com;
+		img-src 'self' data: blob:;
 		font-src 'self' data:;
 		connect-src 'self';
 		object-src 'none';

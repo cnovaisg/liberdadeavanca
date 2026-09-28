@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
-import { Suspense } from "react";
+import { notFound } from "next/navigation";
 import { Blog, blogService } from "@/features/blog";
-import Spinner from "@/shared/ui/components/spinner/spinner";
 
 type BlogTagPageProps = {
 	params: Promise<{ tagId: string }>;
@@ -23,19 +22,15 @@ export async function generateMetadata({
 	};
 }
 
-const BlogTagList = async ({ tagId }: { tagId: string }) => {
-	const { posts, tag } = await blogService.getPostsByTag(tagId);
-	return <Blog posts={posts} tag={tag} filtered />;
-};
-
 const BlogTagPage = async ({ params }: BlogTagPageProps) => {
 	const { tagId } = await params;
+	const { posts, tag } = await blogService.getPostsByTag(tagId);
 
-	return (
-		<Suspense fallback={<Spinner />}>
-			<BlogTagList tagId={tagId} />
-		</Suspense>
-	);
+	if (!tag) {
+		notFound();
+	}
+
+	return <Blog posts={posts} tag={tag} filtered />;
 };
 
 export default BlogTagPage;
