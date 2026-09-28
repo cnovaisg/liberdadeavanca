@@ -28,8 +28,13 @@ export default async function RootLayout({
 }: {
 	children: React.ReactNode;
 }) {
-	// Request-time render so Next.js can apply the CSP nonce from Proxy
-	// to framework scripts (static shells cannot receive a per-request nonce).
+	// Nonce CSP (src/proxy.ts) only works on a per-request render. Next.js
+	// reads the CSP header and stamps that nonce onto framework scripts.
+	// A static shell is built without a request, so it cannot carry a fresh
+	// nonce. `headers()` opts this layout — and every page under it — into
+	// dynamic rendering. Dropping it, or relaxing script-src to
+	// 'unsafe-inline', would either block those scripts or weaken the policy.
+	// Cached fetches (`next.revalidate`) still avoid repeat upstream calls.
 	await headers();
 
 	return (

@@ -9,24 +9,30 @@ type BlogTagPageProps = {
 export async function generateMetadata({
 	params,
 }: BlogTagPageProps): Promise<Metadata> {
-	const { tagId } = await params;
-	const { tag } = await blogService.getPostsByTag(tagId);
+	try {
+		const { tagId } = await params;
+		const { tag } = await blogService.getPostsByTag(tagId);
 
-	if (!tag) {
+		if (!tag) {
+			return { title: "Etiqueta" };
+		}
+
+		return {
+			title: `${tag.name} — Blog`,
+			description: `Artigos com a etiqueta ${tag.name}.`,
+		};
+	} catch (error) {
+		console.error("Não foi possível gerar os metadados da etiqueta", error);
 		return { title: "Etiqueta" };
 	}
-
-	return {
-		title: `${tag.name} — Blog`,
-		description: `Artigos com a etiqueta ${tag.name}.`,
-	};
 }
 
 const BlogTagPage = async ({ params }: BlogTagPageProps) => {
 	const { tagId } = await params;
-	const { posts, tag } = await blogService.getPostsByTag(tagId);
+	const { posts, tag, tagsUnavailable } =
+		await blogService.getPostsByTag(tagId);
 
-	if (!tag) {
+	if (!tag && !tagsUnavailable) {
 		notFound();
 	}
 

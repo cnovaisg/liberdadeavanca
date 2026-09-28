@@ -9,17 +9,22 @@ type BlogPageProps = {
 export async function generateMetadata({
 	params,
 }: BlogPageProps): Promise<Metadata> {
-	const { postId } = await params;
-	const post = await blogService.getPostById(postId);
+	try {
+		const { postId } = await params;
+		const post = await blogService.getPostById(postId);
 
-	if (!post) {
-		return { title: "Artigo não encontrado" };
+		if (!post) {
+			return { title: "Artigo não encontrado" };
+		}
+
+		return {
+			title: post.title,
+			description: post.subtitle,
+		};
+	} catch (error) {
+		console.error("Não foi possível gerar os metadados do artigo", error);
+		return { title: "Artigo" };
 	}
-
-	return {
-		title: post.title,
-		description: post.subtitle,
-	};
 }
 
 const IndividualBlogPage = async ({ params }: BlogPageProps) => {

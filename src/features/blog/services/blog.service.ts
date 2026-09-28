@@ -1,7 +1,7 @@
 import { resolveAuthors } from "@/shared/lib/contentful/authors";
 import { fetchContentfulEntries } from "@/shared/lib/contentful/client";
 import { getContentfulLocale } from "@/shared/lib/contentful/locale";
-import { parseRichTextField } from "@/shared/lib/contentful/rich-text";
+import { toRichTextDocument } from "@/shared/lib/contentful/rich-text";
 import {
 	buildTagMap,
 	fetchPublicTags,
@@ -28,8 +28,13 @@ const blogCache: NextFetchRequestConfig = {
 };
 
 class BlogService {
-	private async getTagNamesById() {
+	/**
+	 * `null` when the tag catalog request failed. Callers still render posts,
+	 * just without etiquetas.
+	 */
+	private async getTagNamesById(): Promise<Map<string, string> | null> {
 		const tags = await fetchPublicTags({ next: blogCache });
+		if (tags === null) return null;
 		return buildTagMap(tags);
 	}
 
@@ -58,7 +63,7 @@ class BlogService {
 			revision: sys.revision,
 			authors: resolveAuthors(fields.authors, includes),
 			tags: this.resolveTags(metadata?.tags, tagNamesById),
-			value: parseRichTextField(fields.blogPostContent),
+			value: toRichTextDocument(fields.blogPostContent),
 		};
 	}
 
@@ -97,7 +102,7 @@ class BlogService {
 			this.getTagNamesById(),
 		]);
 
-		return this.mapPosts(data, tagNamesById);
+		return this.mapPosts(data, tagNamesById ?? new Map());
 	}
 
 	async getPostById(id: string): Promise<PrunedBlogPostType | null> {
@@ -128,7 +133,7 @@ class BlogService {
 
 		return this.pruneBlogPost(
 			{ ...post, includes: data.includes },
-			tagNamesById,
+			tagNamesById ?? new Map(),
 		);
 	}
 
@@ -137,9 +142,12 @@ class BlogService {
 	 * id exists in the Delivery API tag catalog.
 	 * Invalid ids skip the entries query and return an empty list.
 	 */
-	async getPostsByTag(
-		tagId: string,
-	): Promise<{ posts: PrunedBlogPostType[]; tag: BlogTag | null }> {
+	async getPostsByTag(tagId: string): Promise<{
+		posts: PrunedBlogPostType[];
+		tag: BlogTag | null;
+		/** Catalog request failed; the listing is still safe to show. */
+		tagsUnavailable?: boolean;
+	}> {
 		const normalized = tagId.trim();
 		if (!isBlogTagId(normalized)) {
 			return { posts: [], tag: null };
@@ -159,6 +167,14 @@ class BlogService {
 			}),
 			this.getTagNamesById(),
 		]);
+
+		if (!tagNamesById) {
+			return {
+				tag: null,
+				tagsUnavailable: true,
+				posts: this.mapPosts(data, new Map()),
+			};
+		}
 
 		const name = tagNamesById.get(normalized);
 
