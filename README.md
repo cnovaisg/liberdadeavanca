@@ -29,7 +29,7 @@ Set these in `.env.local` (copy from `.env.example`). Same keys in the Vercel pr
 | `CONTENTFUL_API_BASE_URL` | Delivery host only: `https://cdn.contentful.com` (or Preview: `https://preview.contentful.com`). Never `api.contentful.com` |
 | `CONTENTFUL_API_ACCESS_TOKEN` | Contentful **Content Delivery** (or Preview) token — not Management (CMA) |
 | `CONTENTFUL_LOCALE` | Optional Delivery locale for queries (default `en-US`). UI language is `pt-PT` |
-| `CONTENTFUL_WEBHOOK_SIGNING_SECRET` | Space-level webhook HMAC secret (Settings → Webhooks → Settings). Optional until request verification is enabled; then required. Comma-separate two secrets during rotation |
+| `CONTENTFUL_WEBHOOK_SIGNING_SECRET` | Space-level webhook HMAC secret (Settings → Webhooks → Settings). **Required in Production** (`VERCEL_ENV=production`); optional in Preview/local. Comma-separate two secrets during rotation |
 | `REVALIDATE_SECRET` | Shared secret for the on-demand revalidation webhook |
 | `ACCOUNT_MAIL` | Contact address for the mailto icon |
 | `SOCIAL_DATA_X_ACCOUNT` | X/Twitter handle for the homepage feed. Responses are cached for 60 seconds |
@@ -61,16 +61,31 @@ Blog pages cache Contentful fetches for 60 seconds and also accept on-demand rev
 
 ### Request verification (HMAC)
 
-Strongly recommended. Proves the POST was signed by Contentful for your space:
+**Required in Production.** Proves the POST was signed by Contentful for your space.
+Without `CONTENTFUL_WEBHOOK_SIGNING_SECRET`, Production returns **500** (fail closed).
+Preview/local still allow the shared secret alone so you can iterate without HMAC.
 
 1. Contentful: **Settings → Webhooks → Settings tab → Enable request verification**.
 2. Copy the 64-character signing secret (shown once).
-3. Vercel: set `CONTENTFUL_WEBHOOK_SIGNING_SECRET` (Production + Preview) to that value, then redeploy.
+3. Vercel: set `CONTENTFUL_WEBHOOK_SIGNING_SECRET` (at least Production; Preview recommended) to that value, then redeploy.
 4. When the env var is set, `/api/revalidate` requires valid `x-contentful-signature` / `x-contentful-signed-headers` / `x-contentful-timestamp` (60s TTL) **in addition to** `x-revalidate-secret`.
 
 Do not put the secret in the query string — it can leak via logs and referrers.
 
-The route applies a soft per-IP rate limit (30 requests / minute, in-memory). Over the limit it returns **429**. For a hard global cap, add a Vercel Firewall rule or an external store (e.g. Upstash).
+The route applies a soft per-IP rate limit (30 requests / minute, in-memory). Over the limit it returns **429**. Pair with Vercel Firewall rate-limit rules for a hard edge cap (requests blocked at the edge are not billed as function invocations).
+
+### Vercel Firewall (edge rate limits)
+
+Custom WAF rules need a **Pro** (or higher) team. Stage with **log** first, review traffic, then switch the rate-limit action to `rate_limit` / `challenge`.
+
+Suggested rules (Firewall → Custom Rules, or `vercel firewall rules add`):
+
+1. **RL revalidate POST** — `path = /api/revalidate` AND `method = POST` → rate limit **60 / 60s / IP**, action start as **log**.
+2. **RL HTML pages** — `method = GET` AND path not `/_next*`, `/api*`, `/favicon*` → rate limit **300 / 60s / IP**, action **log**.
+3. **RL next/image** — `path` starts with `/_next/image` → rate limit **120 / 60s / IP**, action **log**.
+4. **Block probe paths** — path contains `/wp-admin`, `/.env`, `/.git`, `/phpmyadmin`, `/xmlrpc.php` → **deny**.
+
+Dashboard: [Firewall](https://vercel.com/carlos-novais-projects/liberdadeavanca/firewall). After staging, publish from the UI (or `vercel firewall publish --yes`).
 
 ## Contentful public tags
 

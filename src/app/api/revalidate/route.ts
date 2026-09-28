@@ -8,6 +8,7 @@ import {
 } from "@/features/blog/services/blog.cache";
 import { MANIFESTO_CACHE_TAG } from "@/features/manifesto/services/manifesto.cache";
 import { isContentfulId } from "@/shared/lib/contentful/ids";
+import { mustRequireWebhookHmac } from "@/shared/lib/contentful/webhook-policy";
 import {
 	parseContentfulSigningSecrets,
 	verifyContentfulWebhookRequest,
@@ -29,8 +30,8 @@ const CONTENTFUL_SIGNATURE_TTL_SECONDS = 60;
  *
  * Env:
  *   - REVALIDATE_SECRET — shared header secret (required)
- *   - CONTENTFUL_WEBHOOK_SIGNING_SECRET — space signing secret (optional;
- *     when set, Contentful HMAC headers are required)
+ *   - CONTENTFUL_WEBHOOK_SIGNING_SECRET — space signing secret. Required in
+ *     Production (`VERCEL_ENV=production`); optional in Preview/local.
  *
  * Contentful webhook (Settings → Webhooks):
  *   URL:  https://<host>/api/revalidate
@@ -198,7 +199,18 @@ export async function POST(request: Request) {
 	const signingSecrets = parseContentfulSigningSecrets(
 		env.CONTENTFUL_WEBHOOK_SIGNING_SECRET,
 	);
-	if (signingSecrets.length > 0) {
+	if (signingSecrets.length === 0) {
+		if (mustRequireWebhookHmac()) {
+			return NextResponse.json(
+				{
+					revalidated: false,
+					message:
+						"CONTENTFUL_WEBHOOK_SIGNING_SECRET is required in production",
+				},
+				{ status: 500 },
+			);
+		}
+	} else {
 		const verified = verifyContentfulWebhookRequest({
 			secrets: signingSecrets,
 			method: request.method,
