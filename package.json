@@ -15,7 +15,7 @@
 	"dependencies": {
 		"@contentful/rich-text-react-renderer": "^16.2.2",
 		"@contentful/rich-text-types": "^17.2.7",
-		"motion": "^12.23.12",
+		"motion": "^13.4.4",
 		"next": "16.3.6",
 		"react": "19.2.6",
 		"react-dom": "19.2.6",
