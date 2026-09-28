@@ -1,5 +1,13 @@
 import { getSocialDataCredentials } from "@/shared/lib/env";
 
+/**
+ * Data Cache TTL for SocialData. The homepage stays dynamic because of the
+ * CSP nonce, so `cache: "no-store"` would call this paid API on every visit.
+ * An explicit revalidate still caches the response when Authorization is set.
+ * Same window as the Contentful pages.
+ */
+export const X_FEED_REVALIDATE_SECONDS = 60;
+
 type SocialDataTweet = {
 	tweet_created_at?: string;
 	full_text?: string;
@@ -32,7 +40,7 @@ class SocialDataXService {
 		const response = await fetch(url, {
 			method: "GET",
 			headers,
-			cache: "no-store",
+			next: { revalidate: X_FEED_REVALIDATE_SECONDS },
 		});
 		const data = await response.json();
 		if (!response.ok) {

@@ -32,7 +32,7 @@ Set these in `.env.local` (copy from `.env.example`). Same keys in the Vercel pr
 | `CONTENTFUL_WEBHOOK_SIGNING_SECRET` | Space-level webhook HMAC secret (Settings → Webhooks → Settings). Optional until request verification is enabled; then required. Comma-separate two secrets during rotation |
 | `REVALIDATE_SECRET` | Shared secret for the on-demand revalidation webhook |
 | `ACCOUNT_MAIL` | Contact address for the mailto icon |
-| `SOCIAL_DATA_X_ACCOUNT` | X/Twitter handle for the homepage feed |
+| `SOCIAL_DATA_X_ACCOUNT` | X/Twitter handle for the homepage feed. Responses are cached for 60 seconds |
 | `SOCIAL_DATA_BASE_URL` | SocialData API host — only `https://api.socialdata.tools` (allowlisted) |
 | `SOCIAL_DATA_API_KEY` | SocialData API key |
 
