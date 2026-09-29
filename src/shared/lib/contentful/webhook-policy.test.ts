@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it } from "vitest";
 import {
-	isProductionDeployment,
+	isDeployedVercelEnvironment,
 	mustRequireWebhookHmac,
 } from "./webhook-policy";
 
@@ -16,27 +16,34 @@ afterEach(() => {
 	else env.NODE_ENV = originalNodeEnv;
 });
 
-describe("isProductionDeployment", () => {
-	it("treats VERCEL_ENV=production as production", () => {
+describe("mustRequireWebhookHmac", () => {
+	it("requires HMAC in Vercel production", () => {
 		env.VERCEL_ENV = "production";
 		env.NODE_ENV = "production";
-		expect(isProductionDeployment()).toBe(true);
+		expect(isDeployedVercelEnvironment()).toBe(true);
 		expect(mustRequireWebhookHmac()).toBe(true);
 	});
 
-	it("does not treat Vercel preview as production", () => {
+	it("requires HMAC in Vercel preview (parity with production)", () => {
 		env.VERCEL_ENV = "preview";
 		env.NODE_ENV = "production";
-		expect(isProductionDeployment()).toBe(false);
+		expect(isDeployedVercelEnvironment()).toBe(true);
+		expect(mustRequireWebhookHmac()).toBe(true);
+	});
+
+	it("does not require HMAC for local vercel dev", () => {
+		env.VERCEL_ENV = "development";
+		env.NODE_ENV = "development";
+		expect(isDeployedVercelEnvironment()).toBe(false);
 		expect(mustRequireWebhookHmac()).toBe(false);
 	});
 
 	it("falls back to NODE_ENV when VERCEL_ENV is unset", () => {
 		delete env.VERCEL_ENV;
 		env.NODE_ENV = "production";
-		expect(isProductionDeployment()).toBe(true);
+		expect(mustRequireWebhookHmac()).toBe(true);
 
 		env.NODE_ENV = "development";
-		expect(isProductionDeployment()).toBe(false);
+		expect(mustRequireWebhookHmac()).toBe(false);
 	});
 });

@@ -29,7 +29,7 @@ Set these in `.env.local` (copy from `.env.example`). Same keys in the Vercel pr
 | `CONTENTFUL_API_BASE_URL` | Delivery host only: `https://cdn.contentful.com` (or Preview: `https://preview.contentful.com`). Never `api.contentful.com` |
 | `CONTENTFUL_API_ACCESS_TOKEN` | Contentful **Content Delivery** (or Preview) token — not Management (CMA) |
 | `CONTENTFUL_LOCALE` | Optional Delivery locale for queries (default `en-US`). UI language is `pt-PT` |
-| `CONTENTFUL_WEBHOOK_SIGNING_SECRET` | Space-level webhook HMAC secret (Settings → Webhooks → Settings). **Required in Production** (`VERCEL_ENV=production`); optional in Preview/local. Comma-separate two secrets during rotation |
+| `CONTENTFUL_WEBHOOK_SIGNING_SECRET` | Space-level webhook HMAC secret (Settings → Webhooks → Settings). **Required on Vercel Production and Preview**; optional for local development. Comma-separate two secrets during rotation |
 | `REVALIDATE_SECRET` | Shared secret for the on-demand revalidation webhook |
 | `ACCOUNT_MAIL` | Contact address for the mailto icon |
 | `SOCIAL_DATA_X_ACCOUNT` | X/Twitter handle for the homepage feed. Responses are cached for 60 seconds |
@@ -61,13 +61,13 @@ Blog pages cache Contentful fetches for 60 seconds and also accept on-demand rev
 
 ### Request verification (HMAC)
 
-**Required in Production.** Proves the POST was signed by Contentful for your space.
-Without `CONTENTFUL_WEBHOOK_SIGNING_SECRET`, Production returns **500** (fail closed).
-Preview/local still allow the shared secret alone so you can iterate without HMAC.
+**Required on Vercel Production and Preview.** Proves the POST was signed by Contentful for your space.
+Without `CONTENTFUL_WEBHOOK_SIGNING_SECRET`, deployed environments return **500** (fail closed).
+Local development may omit the signing secret and rely on `REVALIDATE_SECRET` alone.
 
 1. Contentful: **Settings → Webhooks → Settings tab → Enable request verification**.
 2. Copy the 64-character signing secret (shown once).
-3. Vercel: set `CONTENTFUL_WEBHOOK_SIGNING_SECRET` (at least Production; Preview recommended) to that value, then redeploy.
+3. Vercel: set `CONTENTFUL_WEBHOOK_SIGNING_SECRET` for **Production and Preview**, then redeploy.
 4. When the env var is set, `/api/revalidate` requires valid `x-contentful-signature` / `x-contentful-signed-headers` / `x-contentful-timestamp` (60s TTL) **in addition to** `x-revalidate-secret`.
 
 Do not put the secret in the query string — it can leak via logs and referrers.

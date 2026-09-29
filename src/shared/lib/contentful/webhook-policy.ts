@@ -1,18 +1,22 @@
 /**
- * Production gate for Contentful webhook HMAC.
+ * Gate for Contentful webhook HMAC on deployed Vercel environments.
  *
  * On Vercel, `NODE_ENV` is always `"production"` (including Preview).
- * Prefer `VERCEL_ENV === "production"`; fall back to `NODE_ENV` off-Vercel.
+ * Require HMAC for both `production` and `preview`. Local `vercel dev`
+ * (`VERCEL_ENV=development`) and plain local runs stay optional.
+ * Off-Vercel, fall back to `NODE_ENV === "production"`.
  */
-export function isProductionDeployment(): boolean {
+export function isDeployedVercelEnvironment(): boolean {
 	const vercelEnv = process.env.VERCEL_ENV;
-	if (vercelEnv !== undefined && vercelEnv !== "") {
-		return vercelEnv === "production";
-	}
-	return process.env.NODE_ENV === "production";
+	return vercelEnv === "production" || vercelEnv === "preview";
 }
 
-/** Fail closed: Production must verify Contentful request signatures. */
+/**
+ * Fail closed: Production and Preview must verify Contentful signatures.
+ * Local development may omit the signing secret.
+ */
 export function mustRequireWebhookHmac(): boolean {
-	return isProductionDeployment();
+	if (isDeployedVercelEnvironment()) return true;
+	if (process.env.VERCEL_ENV === "development") return false;
+	return process.env.NODE_ENV === "production";
 }
