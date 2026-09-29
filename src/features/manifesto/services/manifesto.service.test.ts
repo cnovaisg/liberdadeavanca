@@ -41,7 +41,7 @@ const entry = {
 				},
 			],
 		},
-		authors: [{ name: "Carlos", role: "Autor", imageUrl: "/a.png" }],
+		authors: [{ name: "Carlos", role: "Autor" }],
 	},
 };
 
@@ -65,7 +65,7 @@ describe("ManifestoService", () => {
 		expect(manifesto).toMatchObject({
 			title: "Manifesto",
 			subtitle: "Em defesa da sociedade civil",
-			authors: [{ name: "Carlos", role: "Autor", imageUrl: "/a.png" }],
+			authors: [{ name: "Carlos", role: "Autor" }],
 		});
 		expect(manifesto?.intro?.nodeType).toBe("document");
 		expect(manifesto?.value?.nodeType).toBe("document");

@@ -1,3 +1,4 @@
+import { log } from "@/shared/lib/log";
 import { getContentfulConfig } from "./config";
 import type { ContentfulIncludes } from "./types";
 
@@ -56,6 +57,11 @@ export async function fetchContentfulEntries<T>(
 	if (!response.ok) {
 		// Bubble up so /blog, articles and /manifesto hit their error boundary
 		// instead of a generic 500. Tag catalog failures are handled separately.
+		log.error("contentful.fetch_failed", {
+			status: response.status,
+			statusText: response.statusText,
+			contentType: options.contentType,
+		});
 		throw new Error(
 			`Contentful API error: ${response.status} ${response.statusText}`,
 		);

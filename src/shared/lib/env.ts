@@ -17,6 +17,19 @@ const optionalEmail = z.preprocess(
 	z.string().email().optional(),
 );
 
+/** BCP 47 language tag (e.g. `en-US`, `pt-PT`). */
+const BCP47_LOCALE_PATTERN = /^[A-Za-z]{2,3}(?:-[A-Za-z0-9]{2,8})*$/;
+
+const optionalContentfulLocale = z.preprocess(
+	emptyToUndefined,
+	z
+		.string()
+		.regex(BCP47_LOCALE_PATTERN, {
+			message: "Must be a BCP 47 locale (e.g. en-US, pt-PT)",
+		})
+		.optional(),
+);
+
 /** Read-only Contentful hosts — never the Management API (`api.contentful.com`). */
 export const CONTENTFUL_READ_HOSTS = new Set([
 	"cdn.contentful.com",
@@ -77,7 +90,7 @@ const envSchema = z.object({
 	/** Content Delivery API (CDA) or Preview token — never a Management (CMA) token. */
 	CONTENTFUL_API_ACCESS_TOKEN: optionalString,
 	/** Delivery locale for CDA queries (default `en-US` when unset). */
-	CONTENTFUL_LOCALE: optionalString,
+	CONTENTFUL_LOCALE: optionalContentfulLocale,
 	/**
 	 * Space-level webhook signing secret(s) from Contentful
 	 * (Settings → Webhooks → Settings → Enable request verification).
