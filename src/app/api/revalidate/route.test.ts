@@ -112,4 +112,38 @@ describe("POST /api/revalidate", () => {
 			paths: ["/manifesto"],
 		});
 	});
+
+	it("acknowledges unknown content types without revalidating", async () => {
+		const response = await post({
+			headers: { "x-revalidate-secret": "shared-revalidate-secret" },
+			body: JSON.stringify({
+				sys: {
+					id: "other1",
+					contentType: { sys: { id: "somethingElse" } },
+				},
+			}),
+		});
+
+		expect(response.status).toBe(200);
+		await expect(response.json()).resolves.toMatchObject({
+			revalidated: true,
+			paths: [],
+		});
+		expect(revalidateTag).not.toHaveBeenCalled();
+		expect(revalidatePath).not.toHaveBeenCalled();
+	});
+
+	it("does not default-refresh blog when content type is missing", async () => {
+		const response = await post({
+			headers: { "x-revalidate-secret": "shared-revalidate-secret" },
+			body: JSON.stringify({ sys: { id: "post1" } }),
+		});
+
+		expect(response.status).toBe(200);
+		await expect(response.json()).resolves.toMatchObject({
+			revalidated: true,
+			paths: [],
+		});
+		expect(revalidateTag).not.toHaveBeenCalled();
+	});
 });

@@ -1,3 +1,4 @@
+import { log } from "@/shared/lib/log";
 import { getContentfulConfig } from "./config";
 
 export type ContentfulTag = {
@@ -37,11 +38,10 @@ export async function fetchPublicTags(options?: {
 		});
 
 		if (!response.ok) {
-			console.error(
-				"Contentful tags request failed",
-				response.status,
-				response.statusText,
-			);
+			log.error("contentful.tags_failed", {
+				status: response.status,
+				statusText: response.statusText,
+			});
 			return null;
 		}
 
@@ -51,7 +51,9 @@ export async function fetchPublicTags(options?: {
 			name: tag.name,
 		}));
 	} catch (error) {
-		console.error("Contentful tags request failed", error);
+		log.error("contentful.tags_failed", {
+			message: error instanceof Error ? error.message : "unknown",
+		});
 		return null;
 	}
 }

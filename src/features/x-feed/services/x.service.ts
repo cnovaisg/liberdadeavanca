@@ -1,4 +1,5 @@
 import { getSocialDataCredentials } from "@/shared/lib/env";
+import { log } from "@/shared/lib/log";
 import { SITE_UI_LOCALE } from "@/shared/lib/site";
 
 /**
@@ -93,7 +94,7 @@ class SocialDataXService {
 		});
 		const data = await response.json();
 		if (!response.ok) {
-			console.error("X feed request failed", response.status);
+			log.error("socialdata.fetch_failed", { status: response.status });
 		}
 		return data;
 	}
@@ -115,7 +116,7 @@ class SocialDataXService {
 		const profile = await this.getJson(`${twitterRoot}/user/${user}`, headers);
 		const userId = profile?.id_str ?? profile?.id;
 		if (!userId) {
-			console.error("X feed: no tweets from search and no user id");
+			log.warn("socialdata.user_missing", { user });
 			return { tweets: [] };
 		}
 
@@ -148,7 +149,9 @@ class SocialDataXService {
 					) ?? [];
 			return postprocessedResults;
 		} catch (error) {
-			console.error("Error postprocessing X feed:", error);
+			log.error("socialdata.postprocess_failed", {
+				message: error instanceof Error ? error.message : "unknown",
+			});
 			return [];
 		}
 	}

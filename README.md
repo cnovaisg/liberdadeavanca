@@ -28,7 +28,7 @@ Set these in `.env.local` (copy from `.env.example`). Same keys in the Vercel pr
 | `CONTENTFUL_SPACE_ID` | Contentful space id |
 | `CONTENTFUL_API_BASE_URL` | Delivery host only: `https://cdn.contentful.com` (or Preview: `https://preview.contentful.com`). Never `api.contentful.com` |
 | `CONTENTFUL_API_ACCESS_TOKEN` | Contentful **Content Delivery** (or Preview) token — not Management (CMA) |
-| `CONTENTFUL_LOCALE` | Optional Delivery locale for queries (default `en-US`). UI language is `pt-PT` |
+| `CONTENTFUL_LOCALE` | Optional Delivery locale for queries (default `en-US`, BCP 47). UI language is `pt-PT` |
 | `CONTENTFUL_WEBHOOK_SIGNING_SECRET` | Space-level webhook HMAC secret (Settings → Webhooks → Settings). **Required on Vercel Production and Preview**; optional for local development. Comma-separate two secrets during rotation |
 | `REVALIDATE_SECRET` | Shared secret for the on-demand revalidation webhook |
 | `ACCOUNT_MAIL` | Contact address for the mailto icon |
@@ -86,6 +86,28 @@ Suggested rules (Firewall → Custom Rules, or `vercel firewall rules add`):
 4. **Block probe paths** — path contains `/wp-admin`, `/.env`, `/.git`, `/phpmyadmin`, `/xmlrpc.php` → **deny**.
 
 Dashboard: [Firewall](https://vercel.com/carlos-novais-projects/liberdadeavanca/firewall). After staging, publish from the UI (or `vercel firewall publish --yes`).
+
+### Observability (cost & upstream errors)
+
+Server logs are structured JSON with a stable `event` field (see `src/shared/lib/log.ts`), so they are searchable in [Runtime Logs](https://vercel.com/carlos-novais-projects/liberdadeavanca/logs):
+
+| Event | Meaning |
+| --- | --- |
+| `contentful.fetch_failed` | CDA entries request failed (status / content type) |
+| `contentful.tags_failed` | Tag catalog request failed |
+| `socialdata.fetch_failed` | SocialData HTTP error |
+| `socialdata.user_missing` | Search empty and profile id missing |
+| `socialdata.postprocess_failed` | Unexpected X feed error |
+| `revalidate.unauthorized` | Bad / missing shared secret |
+| `revalidate.rate_limited` | Soft in-app rate limit hit |
+| `revalidate.skipped_unknown_type` | Webhook ack without cache bust (unknown content type) |
+| `revalidate.ok` | Successful revalidation |
+
+Suggested alerts (Vercel Observability / log drain → your notifier):
+
+1. Spike in `contentful.fetch_failed` or `socialdata.fetch_failed` (upstream outage or credential issue).
+2. Sustained `revalidate.unauthorized` or `revalidate.rate_limited` (abuse / leaked secret probing).
+3. Function invocation volume on Production (dashboard → Observability) — correlates with HTML flood cost while the site is dynamic for CSP nonces.
 
 ## Contentful public tags
 

@@ -7,7 +7,7 @@ describe("resolveAuthors", () => {
 		expect(resolveAuthors([])).toEqual([]);
 	});
 
-	it("resolves linked authors from includes", () => {
+	it("resolves linked authors from includes without imageUrl", () => {
 		const authors = resolveAuthors(
 			[{ sys: { id: "author1", type: "Link", linkType: "Entry" } }],
 			{
@@ -28,12 +28,11 @@ describe("resolveAuthors", () => {
 			{
 				name: "Carlos Novais",
 				role: "Editor",
-				imageUrl: "https://example.com/a.jpg",
 			},
 		]);
 	});
 
-	it("keeps inline author objects", () => {
+	it("keeps inline author objects and drops unused imageUrl", () => {
 		expect(
 			resolveAuthors([
 				{
@@ -47,7 +46,7 @@ describe("resolveAuthors", () => {
 			{
 				name: "Ana",
 				role: "Autora",
-				imageUrl: "https://example.com/b.jpg",
+				contact: "ana@example.com",
 			},
 		]);
 	});

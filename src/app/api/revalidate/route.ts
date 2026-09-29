@@ -14,6 +14,7 @@ import {
 	verifyContentfulWebhookRequest,
 } from "@/shared/lib/contentful/webhook-signature";
 import { env } from "@/shared/lib/env";
+import { log } from "@/shared/lib/log";
 import { checkRateLimit, clientIpFromRequest } from "@/shared/lib/rate-limit";
 
 /** Soft per-IP cap (in-memory; best-effort across serverless isolates). */
@@ -175,6 +176,7 @@ export async function POST(request: Request) {
 	const ip = clientIpFromRequest(request);
 	const rate = checkRateLimit(`revalidate:${ip}`, REVALIDATE_RATE_LIMIT);
 	if (rate.limited) {
+		log.warn("revalidate.rate_limited", { ip });
 		return NextResponse.json(
 			{ revalidated: false, message: "Too many requests" },
 			{
@@ -188,6 +190,7 @@ export async function POST(request: Request) {
 
 	const provided = readProvidedSecret(request);
 	if (!provided || !secretsMatch(provided, expected)) {
+		log.warn("revalidate.unauthorized", { ip });
 		return unauthorized();
 	}
 
@@ -232,12 +235,21 @@ export async function POST(request: Request) {
 		paths.push(...revalidateBlog(target));
 	} else if (target.contentTypeId === "manifesto") {
 		paths.push(...revalidateManifesto());
-	} else if (
-		target.contentTypeId === "blogPost" ||
-		target.contentTypeId === undefined
-	) {
-		// Unknown content type: refresh blog (legacy webhook payloads).
+	} else if (target.contentTypeId === "blogPost") {
 		paths.push(...revalidateBlog(target));
+	} else {
+		// Unknown / missing content type: acknowledge without cache thrash.
+		log.info("revalidate.skipped_unknown_type", {
+			contentTypeId: target.contentTypeId ?? "missing",
+			topic: topic ?? "missing",
+		});
+	}
+
+	if (paths.length > 0) {
+		log.info("revalidate.ok", {
+			pathCount: paths.length,
+			contentTypeId: target.contentTypeId ?? (target.isTag ? "tag" : "n/a"),
+		});
 	}
 
 	return NextResponse.json({
