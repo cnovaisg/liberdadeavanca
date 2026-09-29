@@ -56,7 +56,7 @@ describe("POST /api/revalidate", () => {
 		expect(revalidateTag).not.toHaveBeenCalled();
 	});
 
-	it("fails closed in production without HMAC secret", async () => {
+	it("fails closed on deployed environments without HMAC secret", async () => {
 		mustRequireWebhookHmac.mockReturnValue(true);
 		const response = await post({
 			headers: { "x-revalidate-secret": "shared-revalidate-secret" },
@@ -66,12 +66,13 @@ describe("POST /api/revalidate", () => {
 		});
 		expect(response.status).toBe(500);
 		await expect(response.json()).resolves.toMatchObject({
-			message: "CONTENTFUL_WEBHOOK_SIGNING_SECRET is required in production",
+			message:
+				"CONTENTFUL_WEBHOOK_SIGNING_SECRET is required on deployed environments",
 		});
 		expect(revalidateTag).not.toHaveBeenCalled();
 	});
 
-	it("revalidates blog paths when authorised without HMAC (preview)", async () => {
+	it("revalidates blog paths when authorised without HMAC (local)", async () => {
 		const response = await post({
 			headers: {
 				"x-revalidate-secret": "shared-revalidate-secret",

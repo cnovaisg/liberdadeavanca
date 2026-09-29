@@ -30,8 +30,8 @@ const CONTENTFUL_SIGNATURE_TTL_SECONDS = 60;
  *
  * Env:
  *   - REVALIDATE_SECRET — shared header secret (required)
- *   - CONTENTFUL_WEBHOOK_SIGNING_SECRET — space signing secret. Required in
- *     Production (`VERCEL_ENV=production`); optional in Preview/local.
+ *   - CONTENTFUL_WEBHOOK_SIGNING_SECRET — space signing secret. Required on
+ *     Vercel Production and Preview; optional for local development.
  *
  * Contentful webhook (Settings → Webhooks):
  *   URL:  https://<host>/api/revalidate
@@ -205,7 +205,7 @@ export async function POST(request: Request) {
 				{
 					revalidated: false,
 					message:
-						"CONTENTFUL_WEBHOOK_SIGNING_SECRET is required in production",
+						"CONTENTFUL_WEBHOOK_SIGNING_SECRET is required on deployed environments",
 				},
 				{ status: 500 },
 			);
