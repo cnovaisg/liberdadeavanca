@@ -149,19 +149,22 @@ describe("RichText", () => {
 		[BLOCKS.HEADING_4, "h4"],
 		[BLOCKS.HEADING_5, "h5"],
 		[BLOCKS.HEADING_6, "h6"],
-	] as const)("renderiza %s como <%s> e não como parágrafo", (nodeType, tag) => {
-		const html = renderDocument([
-			{
-				nodeType,
-				data: {},
-				content: [text("Título")],
-			},
-		]);
+	] as const)(
+		"renderiza %s como <%s> e não como parágrafo",
+		(nodeType, tag) => {
+			const html = renderDocument([
+				{
+					nodeType,
+					data: {},
+					content: [text("Título")],
+				},
+			]);
 
-		expect(html).toContain(`<${tag}`);
-		expect(html).toContain("Título");
-		expect(html).not.toContain("<p");
-	});
+			expect(html).toContain(`<${tag}`);
+			expect(html).toContain("Título");
+			expect(html).not.toContain("<p");
+		},
+	);
 
 	it("renderiza negrito, itálico, sublinhado e código", () => {
 		const html = renderDocument([
