@@ -108,8 +108,16 @@ export function verifyContentfulWebhookRequest(options: {
 	}
 
 	const ttlSeconds = options.ttlSeconds ?? 60;
-	if (ttlSeconds !== 0 && Date.now() - timestampMs >= ttlSeconds * 1000) {
-		return { ok: false, reason: "Contentful signature expired" };
+	// Past and future timestamps outside the TTL are rejected. A few seconds
+	// of clock skew still pass, because they sit inside the window (default 60s).
+	if (
+		ttlSeconds !== 0 &&
+		Math.abs(Date.now() - timestampMs) >= ttlSeconds * 1000
+	) {
+		return {
+			ok: false,
+			reason: "Contentful signature timestamp outside the allowed window",
+		};
 	}
 
 	const signedHeaderNames = signedHeadersRaw

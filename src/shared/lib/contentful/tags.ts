@@ -1,18 +1,10 @@
 import { log } from "@/shared/lib/log";
 import { getContentfulConfig } from "./config";
+import { parseContentfulTagsPayload } from "./payload";
 
 export type ContentfulTag = {
 	id: string;
 	name: string;
-};
-
-type ContentfulTagEntry = {
-	sys: { id: string };
-	name: string;
-};
-
-type ContentfulTagsResponse = {
-	items?: ContentfulTagEntry[];
 };
 
 /**
@@ -45,11 +37,7 @@ export async function fetchPublicTags(options?: {
 			return null;
 		}
 
-		const data = (await response.json()) as ContentfulTagsResponse;
-		return (data.items ?? []).map((tag) => ({
-			id: tag.sys.id,
-			name: tag.name,
-		}));
+		return parseContentfulTagsPayload(await response.json());
 	} catch (error) {
 		log.error("contentful.tags_failed", {
 			message: error instanceof Error ? error.message : "unknown",

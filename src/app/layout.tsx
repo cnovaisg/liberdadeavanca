@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Anton, Geist } from "next/font/google";
 import { headers } from "next/headers";
 import "./globals.css";
+import { getSiteUrl } from "@/shared/lib/env";
 import { SITE_UI_LOCALE } from "@/shared/lib/site";
 import MainLayout from "@/shared/ui/layouts/main.layout";
 
@@ -19,6 +20,7 @@ const anton = Anton({
 });
 
 export const metadata: Metadata = {
+	metadataBase: new URL(getSiteUrl()),
 	title: "Liberdade Avança",
 	description: "Movimento Liberdade Avança: em defesa da sociedade civil.",
 };

@@ -12,10 +12,10 @@ export function getContentfulConfig(): ContentfulConfig | null {
 		return null;
 	}
 
-	const { spaceId, apiBaseUrl, accessToken } = credentials;
+	const { spaceId, apiBaseUrl, accessToken, environment } = credentials;
 
 	return {
-		baseUrl: `${apiBaseUrl}/spaces/${spaceId}/environments/master`,
+		baseUrl: `${apiBaseUrl}/spaces/${spaceId}/environments/${environment}`,
 		headers: {
 			Authorization: `Bearer ${accessToken}`,
 			"Content-Type": "application/json",

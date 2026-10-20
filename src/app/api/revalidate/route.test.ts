@@ -11,7 +11,7 @@ vi.mock("next/cache", () => ({
 
 vi.mock("@/shared/lib/env", () => ({
 	env: {
-		REVALIDATE_SECRET: "shared-revalidate-secret",
+		REVALIDATE_SECRET: "shared-revalidate-secret" as string | undefined,
 		CONTENTFUL_WEBHOOK_SIGNING_SECRET: undefined as string | undefined,
 	},
 }));
@@ -41,10 +41,18 @@ const post = (init?: RequestInit) =>
 	);
 
 describe("POST /api/revalidate", () => {
+	let errorLog: ReturnType<typeof vi.spyOn> | undefined;
+	let warnLog: ReturnType<typeof vi.spyOn> | undefined;
+
 	beforeEach(() => {
+		errorLog?.mockRestore();
+		warnLog?.mockRestore();
 		vi.clearAllMocks();
 		mustRequireWebhookHmac.mockReturnValue(false);
+		env.REVALIDATE_SECRET = "shared-revalidate-secret";
 		env.CONTENTFUL_WEBHOOK_SIGNING_SECRET = undefined;
+		errorLog = vi.spyOn(console, "error").mockImplementation(() => {});
+		warnLog = vi.spyOn(console, "warn").mockImplementation(() => {});
 	});
 
 	it("rejects missing shared secret", async () => {
@@ -65,10 +73,89 @@ describe("POST /api/revalidate", () => {
 			}),
 		});
 		expect(response.status).toBe(500);
-		await expect(response.json()).resolves.toMatchObject({
-			message:
-				"CONTENTFUL_WEBHOOK_SIGNING_SECRET is required on deployed environments",
+		await expect(response.json()).resolves.toEqual({
+			revalidated: false,
+			message: "Service unavailable",
 		});
+		expect(JSON.stringify(errorLog?.mock.calls)).toContain(
+			"CONTENTFUL_WEBHOOK_SIGNING_SECRET",
+		);
+		expect(revalidateTag).not.toHaveBeenCalled();
+	});
+
+	it("hides a missing shared secret behind a generic 500", async () => {
+		env.REVALIDATE_SECRET = undefined;
+		const response = await post({ body: "{}" });
+		expect(response.status).toBe(500);
+		await expect(response.json()).resolves.toEqual({
+			revalidated: false,
+			message: "Service unavailable",
+		});
+		expect(JSON.stringify(errorLog?.mock.calls)).toContain("REVALIDATE_SECRET");
+		expect(revalidateTag).not.toHaveBeenCalled();
+	});
+
+	it("returns a generic 401 when the HMAC signature is rejected", async () => {
+		env.CONTENTFUL_WEBHOOK_SIGNING_SECRET = "a".repeat(64);
+		const response = await post({
+			headers: { "x-revalidate-secret": "shared-revalidate-secret" },
+			body: "{}",
+		});
+		expect(response.status).toBe(401);
+		const body = await response.json();
+		expect(body).toEqual({ revalidated: false, message: "Unauthorized" });
+		expect(JSON.stringify(body)).not.toMatch(/signature|secret|Contentful/i);
+		expect(JSON.stringify(warnLog?.mock.calls)).toContain(
+			"Missing Contentful signature headers",
+		);
+		expect(revalidateTag).not.toHaveBeenCalled();
+	});
+
+	it("rejects a content-length above 64 KB before revalidating", async () => {
+		const response = await post({
+			headers: {
+				"x-revalidate-secret": "shared-revalidate-secret",
+				"content-length": String(64 * 1024 + 1),
+			},
+			body: "{}",
+		});
+		expect(response.status).toBe(413);
+		await expect(response.json()).resolves.toEqual({
+			revalidated: false,
+			message: "Payload too large",
+		});
+		expect(revalidateTag).not.toHaveBeenCalled();
+	});
+
+	it("rejects a body that exceeds 64 KB while it is being read", async () => {
+		const response = await post({
+			headers: { "x-revalidate-secret": "shared-revalidate-secret" },
+			body: "x".repeat(64 * 1024 + 1),
+		});
+		expect(response.status).toBe(413);
+		await expect(response.json()).resolves.toEqual({
+			revalidated: false,
+			message: "Payload too large",
+		});
+		expect(revalidateTag).not.toHaveBeenCalled();
+	});
+
+	it("stops reading a stream once it passes 64 KB", async () => {
+		const chunk = new Uint8Array(32 * 1024);
+		const stream = new ReadableStream<Uint8Array>({
+			pull(controller) {
+				controller.enqueue(chunk);
+			},
+		});
+		const response = await POST(
+			new Request("https://example.com/api/revalidate", {
+				method: "POST",
+				headers: { "x-revalidate-secret": "shared-revalidate-secret" },
+				body: stream,
+				duplex: "half",
+			} as RequestInit & { duplex: "half" }),
+		);
+		expect(response.status).toBe(413);
 		expect(revalidateTag).not.toHaveBeenCalled();
 	});
 

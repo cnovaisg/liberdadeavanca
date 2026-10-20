@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { richTextExcerpt } from "@/shared/lib/contentful/rich-text";
+import { SITE_UI_LOCALE } from "@/shared/lib/site";
 import ArticleInfo from "@/shared/ui/sections/article-info/article-info.section";
 import type { PrunedBlogPostType } from "../../types";
 import PostTags from "./post-tags";
@@ -50,7 +51,7 @@ const PostSummary = ({ post, featured = false }: PostSummaryProps) => {
 
 				{featured && excerpt ? (
 					<p
-						lang="pt"
+						lang={SITE_UI_LOCALE}
 						className="hyphens-auto font-geist prose prose-sm prose-zinc font-[500] line-clamp-3"
 					>
 						{excerpt}
