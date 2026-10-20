@@ -1,6 +1,7 @@
 import { createHash, timingSafeEqual } from "node:crypto";
 import { revalidatePath, revalidateTag } from "next/cache";
 import { NextResponse } from "next/server";
+import { z } from "zod";
 import {
 	BLOG_CACHE_TAG,
 	BLOG_TAGS_CACHE_TAG,
@@ -25,6 +26,14 @@ const REVALIDATE_RATE_LIMIT = {
 
 /** Replay window for Contentful HMAC timestamps. */
 const CONTENTFUL_SIGNATURE_TTL_SECONDS = 60;
+
+/** Hard cap so a webhook body cannot be buffered without bound. */
+const MAX_REVALIDATE_BODY_BYTES = 64 * 1024;
+
+const GENERIC_UNAUTHORIZED = "Unauthorized";
+const GENERIC_UNAVAILABLE = "Service unavailable";
+const GENERIC_TOO_LARGE = "Payload too large";
+const GENERIC_BAD_REQUEST = "Bad request";
 
 /**
  * On-demand cache revalidation for Contentful publishes.
@@ -69,8 +78,10 @@ type WebhookTarget = {
 	contentTypeId?: string;
 };
 
-const unauthorized = (message = "Unauthorized") =>
-	NextResponse.json({ revalidated: false, message }, { status: 401 });
+const jsonError = (status: number, message: string) =>
+	NextResponse.json({ revalidated: false, message }, { status });
+
+const unauthorized = () => jsonError(401, GENERIC_UNAUTHORIZED);
 
 const secretsMatch = (provided: string, expected: string) => {
 	const providedHash = createHash("sha256").update(provided).digest();
@@ -155,22 +166,82 @@ const revalidateManifesto = () => {
 	return ["/manifesto"];
 };
 
+const webhookBodySchema = z.looseObject({
+	sys: z
+		.looseObject({
+			id: z.unknown().optional(),
+			type: z.unknown().optional(),
+			contentType: z
+				.looseObject({
+					sys: z.looseObject({ id: z.unknown().optional() }).optional(),
+				})
+				.optional(),
+		})
+		.optional(),
+	entryId: z.unknown().optional(),
+	entityId: z.unknown().optional(),
+});
+
+const declaredBodyTooLarge = (request: Request) => {
+	const raw = request.headers.get("content-length");
+	if (raw === null) return false;
+	const length = Number(raw);
+	if (!Number.isInteger(length) || length < 0) return true;
+	return length > MAX_REVALIDATE_BODY_BYTES;
+};
+
+/** Reads the body, stopping as soon as it exceeds `maxBytes`. */
+const readLimitedBody = async (
+	request: Request,
+	maxBytes: number,
+): Promise<string | null> => {
+	const reader = request.body?.getReader();
+	if (!reader) return "";
+
+	const decoder = new TextDecoder();
+	let received = 0;
+	let text = "";
+
+	while (true) {
+		const { done, value } = await reader.read();
+		if (done) break;
+		if (!value) continue;
+		received += value.byteLength;
+		if (received > maxBytes) {
+			await reader.cancel();
+			return null;
+		}
+		text += decoder.decode(value, { stream: true });
+	}
+
+	text += decoder.decode();
+	return text;
+};
+
 const parseJsonBody = (rawBody: string): ContentfulWebhookBody | null => {
 	if (!rawBody) return null;
+	let payload: unknown;
 	try {
-		return JSON.parse(rawBody) as ContentfulWebhookBody;
+		payload = JSON.parse(rawBody);
 	} catch {
+		log.warn("revalidate.body_invalid", { reason: "invalid json" });
 		return null;
 	}
+
+	const parsed = webhookBodySchema.safeParse(payload);
+	if (!parsed.success) {
+		log.warn("revalidate.body_invalid", { reason: "unexpected shape" });
+		return null;
+	}
+
+	return parsed.data;
 };
 
 export async function POST(request: Request) {
 	const expected = env.REVALIDATE_SECRET;
 	if (!expected) {
-		return NextResponse.json(
-			{ revalidated: false, message: "REVALIDATE_SECRET is not configured" },
-			{ status: 500 },
-		);
+		log.error("revalidate.misconfigured", { missing: "REVALIDATE_SECRET" });
+		return jsonError(500, GENERIC_UNAVAILABLE);
 	}
 
 	const ip = clientIpFromRequest(request);
@@ -194,8 +265,31 @@ export async function POST(request: Request) {
 		return unauthorized();
 	}
 
+	if (declaredBodyTooLarge(request)) {
+		log.warn("revalidate.body_too_large", {
+			ip,
+			contentLength: request.headers.get("content-length") ?? "missing",
+		});
+		return jsonError(413, GENERIC_TOO_LARGE);
+	}
+
 	// Raw body is required for HMAC verification (must match bytes Contentful signed).
-	const rawBody = await request.text();
+	let rawBody: string;
+	try {
+		const limited = await readLimitedBody(request, MAX_REVALIDATE_BODY_BYTES);
+		if (limited === null) {
+			log.warn("revalidate.body_too_large", { ip, contentLength: "stream" });
+			return jsonError(413, GENERIC_TOO_LARGE);
+		}
+		rawBody = limited;
+	} catch (error) {
+		log.warn("revalidate.body_unreadable", {
+			ip,
+			message: error instanceof Error ? error.message : "unknown",
+		});
+		return jsonError(400, GENERIC_BAD_REQUEST);
+	}
+
 	const requestUrl = new URL(request.url);
 	const requestPath = `${requestUrl.pathname}${requestUrl.search}`;
 
@@ -204,14 +298,10 @@ export async function POST(request: Request) {
 	);
 	if (signingSecrets.length === 0) {
 		if (mustRequireWebhookHmac()) {
-			return NextResponse.json(
-				{
-					revalidated: false,
-					message:
-						"CONTENTFUL_WEBHOOK_SIGNING_SECRET is required on deployed environments",
-				},
-				{ status: 500 },
-			);
+			log.error("revalidate.misconfigured", {
+				missing: "CONTENTFUL_WEBHOOK_SIGNING_SECRET",
+			});
+			return jsonError(500, GENERIC_UNAVAILABLE);
 		}
 	} else {
 		const verified = verifyContentfulWebhookRequest({
@@ -223,7 +313,8 @@ export async function POST(request: Request) {
 			ttlSeconds: CONTENTFUL_SIGNATURE_TTL_SECONDS,
 		});
 		if (!verified.ok) {
-			return unauthorized(verified.reason);
+			log.warn("revalidate.unauthorized", { ip, reason: verified.reason });
+			return unauthorized();
 		}
 	}
 

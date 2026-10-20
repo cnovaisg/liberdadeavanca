@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { CONTENTFUL_ID_PATTERN } from "@/shared/lib/contentful/ids";
 
 /** Treat empty strings as unset (common in `.env.example` / Vercel placeholders). */
 const emptyToUndefined = (value: unknown) => {
@@ -28,6 +29,50 @@ const optionalContentfulLocale = z.preprocess(
 			message: "Must be a BCP 47 locale (e.g. en-US, pt-PT)",
 		})
 		.optional(),
+);
+
+/** Contentful environment id. Empty means the default `master` environment. */
+const contentfulEnvironment = z.preprocess(
+	emptyToUndefined,
+	z
+		.string()
+		.regex(CONTENTFUL_ID_PATTERN, {
+			message:
+				"Must be a Contentful environment id (letters, numbers, _ and -)",
+		})
+		.default("master"),
+);
+
+/** Public site origin used by robots.txt, the sitemap and metadata. */
+export const DEFAULT_SITE_URL = "https://liberdadeavanca.vercel.app";
+
+const siteUrl = z.preprocess(
+	emptyToUndefined,
+	z
+		.string()
+		.url()
+		.refine(
+			(value) => {
+				try {
+					const url = new URL(value);
+					return (
+						url.protocol === "https:" &&
+						url.username === "" &&
+						url.password === "" &&
+						url.pathname === "/" &&
+						url.search === "" &&
+						url.hash === ""
+					);
+				} catch {
+					return false;
+				}
+			},
+			{
+				message:
+					"Must be an https origin without a path (e.g. https://liberdadeavanca.vercel.app)",
+			},
+		)
+		.default(DEFAULT_SITE_URL),
 );
 
 /** Read-only Contentful hosts — never the Management API (`api.contentful.com`). */
@@ -91,6 +136,10 @@ const envSchema = z.object({
 	CONTENTFUL_API_ACCESS_TOKEN: optionalString,
 	/** Delivery locale for CDA queries (default `en-US` when unset). */
 	CONTENTFUL_LOCALE: optionalContentfulLocale,
+	/** Contentful environment id (default `master`). */
+	CONTENTFUL_ENVIRONMENT: contentfulEnvironment,
+	/** Public https origin. Defaults to the production Vercel URL. */
+	SITE_URL: siteUrl,
 	/**
 	 * Space-level webhook signing secret(s) from Contentful
 	 * (Settings → Webhooks → Settings → Enable request verification).
@@ -112,6 +161,8 @@ function loadEnv(): Env {
 		CONTENTFUL_API_BASE_URL: process.env.CONTENTFUL_API_BASE_URL,
 		CONTENTFUL_API_ACCESS_TOKEN: process.env.CONTENTFUL_API_ACCESS_TOKEN,
 		CONTENTFUL_LOCALE: process.env.CONTENTFUL_LOCALE,
+		CONTENTFUL_ENVIRONMENT: process.env.CONTENTFUL_ENVIRONMENT,
+		SITE_URL: process.env.SITE_URL,
 		CONTENTFUL_WEBHOOK_SIGNING_SECRET:
 			process.env.CONTENTFUL_WEBHOOK_SIGNING_SECRET,
 		REVALIDATE_SECRET: process.env.REVALIDATE_SECRET,
@@ -150,7 +201,17 @@ export function getContentfulCredentials() {
 		);
 	}
 
-	return { spaceId, apiBaseUrl, accessToken };
+	return {
+		spaceId,
+		apiBaseUrl,
+		accessToken,
+		environment: env.CONTENTFUL_ENVIRONMENT,
+	};
+}
+
+/** Site origin without a trailing slash. */
+export function getSiteUrl(): string {
+	return env.SITE_URL.replace(/\/$/, "");
 }
 
 export function getSocialDataCredentials() {

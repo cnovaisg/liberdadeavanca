@@ -11,16 +11,8 @@ export type ManifestoEntryType = {
 	fields: {
 		title: string;
 		subtitle?: string;
-		intro?: {
-			content: Array<{
-				content: Array<{ value: string }>;
-			}>;
-		};
-		manifestoContent: {
-			content: Array<{
-				content: Array<{ value: string }>;
-			}>;
-		};
+		intro?: Document;
+		manifestoContent: Document;
 		authors?: ContentfulAuthorField[];
 	};
 	includes?: ContentfulIncludes;

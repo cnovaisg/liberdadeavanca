@@ -1,5 +1,6 @@
 import { log } from "@/shared/lib/log";
 import { getContentfulConfig } from "./config";
+import { parseContentfulEntriesPayload } from "./payload";
 import type { ContentfulIncludes } from "./types";
 
 export type ContentfulEntriesResponse<T> = {
@@ -67,5 +68,16 @@ export async function fetchContentfulEntries<T>(
 		);
 	}
 
-	return response.json() as Promise<ContentfulEntriesResponse<T>>;
+	let payload: unknown;
+	try {
+		payload = await response.json();
+	} catch (error) {
+		log.error("contentful.response_invalid", {
+			contentType: options.contentType,
+			message: error instanceof Error ? error.message : "invalid json",
+		});
+		return null;
+	}
+
+	return parseContentfulEntriesPayload<T>(payload, options.contentType);
 }

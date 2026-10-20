@@ -1,6 +1,7 @@
 "use client";
 import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useState } from "react";
+import { SITE_UI_LOCALE } from "@/shared/lib/site";
 
 type ItemType = {
 	date: {
@@ -91,7 +92,7 @@ const PostCard = ({ user, text, id, date }: PostCardProps) => {
 					</div>
 				</div>
 				<p
-					lang="pt"
+					lang={SITE_UI_LOCALE}
 					className="leading-5 break-words hyphens-auto line-clamp-5 overflow-hidden text-ellipsis text-xs text-zinc-700 font-[700] tracking-wide"
 				>
 					{text}

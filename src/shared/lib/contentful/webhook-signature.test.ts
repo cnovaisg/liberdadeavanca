@@ -1,6 +1,6 @@
 import { createHmac } from "node:crypto";
 import { escape as qsEscape } from "node:querystring";
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import {
 	CONTENTFUL_SIGNING_SECRET_PATTERN,
 	parseContentfulSigningSecrets,
@@ -110,6 +110,66 @@ describe("verifyContentfulWebhookRequest", () => {
 				rawBody: `${body} `,
 			}).ok,
 		).toBe(false);
+	});
+
+	describe("timestamp window", () => {
+		const now = new Date("2026-06-01T12:00:00.000Z");
+
+		afterEach(() => {
+			vi.useRealTimers();
+		});
+
+		const signedAt = (timestamp: number) => {
+			const method = "POST";
+			const path = "/api/revalidate";
+			const body = "{}";
+			const base = {
+				"content-type": "application/json",
+				"x-contentful-timestamp": String(timestamp),
+			};
+			const { signature, headersForSign } = sign(
+				secret,
+				method,
+				path,
+				base,
+				body,
+				timestamp,
+			);
+			return verifyContentfulWebhookRequest({
+				secrets: [secret],
+				method,
+				path,
+				headers: new Headers({
+					...headersForSign,
+					"x-contentful-signature": signature,
+				}),
+				rawBody: body,
+			});
+		};
+
+		it("accepts a timestamp a few seconds in the future", () => {
+			vi.useFakeTimers();
+			vi.setSystemTime(now);
+			expect(signedAt(now.getTime() + 2_000)).toEqual({ ok: true });
+		});
+
+		it("rejects a timestamp at or beyond the TTL in the future", () => {
+			vi.useFakeTimers();
+			vi.setSystemTime(now);
+			expect(signedAt(now.getTime() + 60_000)).toEqual({
+				ok: false,
+				reason: "Contentful signature timestamp outside the allowed window",
+			});
+		});
+
+		it("rejects a timestamp older than the TTL", () => {
+			vi.useFakeTimers();
+			vi.setSystemTime(now);
+			expect(signedAt(now.getTime() - 60_000)).toEqual({
+				ok: false,
+				reason: "Contentful signature timestamp outside the allowed window",
+			});
+		});
 	});
 });
 

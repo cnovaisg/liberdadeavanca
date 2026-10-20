@@ -24,15 +24,7 @@ export type BlogPostEntryType = {
 		title: string;
 		subtitle?: string;
 		date?: string;
-		blogPostContent: {
-			nodeType: string;
-			data: Record<string, unknown>;
-			content: Array<{
-				nodeType: string;
-				data: Record<string, unknown>;
-				content: Array<{ value: string }>;
-			}>;
-		};
+		blogPostContent: Document;
 		authors?: ContentfulAuthorField[];
 	};
 	includes?: ContentfulIncludes;

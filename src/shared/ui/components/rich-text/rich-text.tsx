@@ -9,6 +9,7 @@ import {
 	isExternalHttpHref,
 	sanitizeRichTextHref,
 } from "@/shared/lib/contentful/rich-text";
+import { SITE_UI_LOCALE } from "@/shared/lib/site";
 
 const paragraphClassName =
 	"hyphens-auto font-geist prose prose-sm prose-zinc font-[500]";
@@ -81,7 +82,7 @@ const richTextOptions: Options = {
 	},
 	renderNode: {
 		[BLOCKS.PARAGRAPH]: (_node, children) => (
-			<p lang="pt" className={paragraphClassName}>
+			<p lang={SITE_UI_LOCALE} className={paragraphClassName}>
 				{children}
 			</p>
 		),
