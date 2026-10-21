@@ -178,8 +178,10 @@ describe("POST /api/revalidate", () => {
 		expect(body.revalidated).toBe(true);
 		expect(body.paths).toContain("/blog");
 		expect(body.paths).toContain("/blog/post1");
+		expect(body.paths).toContain("/sitemap.xml");
 		expect(revalidateTag).toHaveBeenCalled();
 		expect(revalidatePath).toHaveBeenCalled();
+		expect(revalidatePath).toHaveBeenCalledWith("/sitemap.xml");
 	});
 
 	it("revalidates manifesto for manifesto content type", async () => {

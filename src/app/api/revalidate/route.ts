@@ -57,9 +57,11 @@ const GENERIC_BAD_REQUEST = "Bad request";
  *
  * The secret must not be passed in the query string (avoids log/referrer leaks).
  * On success the route revalidates:
- *   - blog: `/blog`, `/blog/tag/[tagId]`, and optionally `/blog/[postId]`
+ *   - blog: `/blog`, `/blog/tag/[tagId]`, `/sitemap.xml`, and optionally `/blog/[postId]`
  *   - manifesto: `/manifesto`
  * Tag events also revalidate every blog post page, because display names live there.
+ * Blog publish, unpublish, delete, and tag changes also revalidate `/sitemap.xml`
+ * so the sitemap drops stale posts without waiting for the next deploy.
  */
 
 type ContentfulWebhookBody = {
@@ -143,8 +145,9 @@ const revalidateBlog = ({ isTag, entryId }: WebhookTarget) => {
 	revalidateTag(BLOG_TAGS_CACHE_TAG, { expire: 0 });
 	revalidatePath("/blog");
 	revalidatePath("/blog/tag/[tagId]", "page");
+	revalidatePath("/sitemap.xml");
 
-	const paths = ["/blog", "/blog/tag/[tagId]"];
+	const paths = ["/blog", "/blog/tag/[tagId]", "/sitemap.xml"];
 
 	if (isTag) {
 		revalidatePath("/blog/[postId]", "page");
