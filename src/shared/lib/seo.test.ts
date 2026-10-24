@@ -26,7 +26,7 @@ describe("metadados do site", () => {
 			locale: "pt_PT",
 			siteName: "Liberdade Avança",
 		});
-		expect(metadata.twitter).toMatchObject({ card: "summary" });
+		expect(metadata.twitter).toMatchObject({ card: "summary_large_image" });
 	});
 
 	it("cada página leva canonical, Open Graph e Twitter", () => {
@@ -43,8 +43,9 @@ describe("metadados do site", () => {
 			url: "/manifesto",
 		});
 		expect(metadata.twitter).toMatchObject({
-			card: "summary",
+			card: "summary_large_image",
 			description: "Manifesto do movimento Liberdade Avança.",
 		});
+		expect(metadata.openGraph && "images" in metadata.openGraph).toBe(false);
 	});
 });
