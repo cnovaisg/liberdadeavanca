@@ -43,7 +43,7 @@ export function rootMetadata(): Metadata {
 			url: siteUrl,
 		},
 		twitter: {
-			card: "summary",
+			card: "summary_large_image",
 			title: SITE_NAME,
 			description: SITE_DESCRIPTION,
 		},
@@ -100,7 +100,7 @@ export function pageMetadata(input: PageMetadataInput): Metadata {
 		alternates: { canonical: canonicalPath },
 		openGraph,
 		twitter: {
-			card: "summary",
+			card: "summary_large_image",
 			title,
 			description,
 		},

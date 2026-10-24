@@ -46,7 +46,7 @@ describe("metadados do blog", () => {
 			url: "/blog/impostos-justos",
 		});
 		expect(metadata.twitter).toMatchObject({
-			card: "summary",
+			card: "summary_large_image",
 			title: "Impostos",
 			description: "Um resumo",
 		});

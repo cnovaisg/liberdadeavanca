@@ -159,7 +159,7 @@ Depois de preencher, publica a entrada. Um slug inválido é ignorado e o artigo
 
 `/rss.xml` lista os últimos 50 artigos (título, link canónico, resumo, data). O `<head>` anuncia o feed com `rel="alternate"`.
 
-O título de cada página segue o modelo `%s · Liberdade Avança`. `metadataBase` é `SITE_URL` (por defeito `https://liberdadeavanca.vercel.app`). Ainda não há imagem Open Graph.
+O título de cada página segue o modelo `%s · Liberdade Avança`. `metadataBase` é `SITE_URL` (por defeito `https://liberdadeavanca.vercel.app`). As imagens Open Graph e Twitter (1200×630) são geradas no site: um cartão do movimento na raiz (home, blog, manifesto e etiquetas) e um cartão com o título em cada artigo. O ícone do separador são as iniciais LA.
 
 ## Robots e sitemap
 
