@@ -23,6 +23,7 @@ const includesSchema = z.looseObject({
 const entriesResponseSchema = z.looseObject({
 	items: z.array(z.unknown()).optional(),
 	includes: z.unknown().optional(),
+	total: z.unknown().optional(),
 });
 
 const tagItemSchema = z.looseObject({
@@ -44,8 +45,16 @@ const issuePaths = (error: z.ZodError) =>
 
 export type ParsedContentfulEntries<T> = {
 	items: T[];
+	total?: number;
 	includes?: ContentfulIncludes;
 };
+
+function readTotal(value: unknown): number | undefined {
+	if (typeof value !== "number" || !Number.isInteger(value) || value < 0) {
+		return undefined;
+	}
+	return value;
+}
 
 /**
  * Accepts a Delivery API `/entries` payload. Malformed envelopes and items
@@ -84,7 +93,12 @@ export function parseContentfulEntriesPayload<T>(
 	}
 
 	const includes = parseIncludes(parsed.data.includes, contentType);
-	return includes ? { items, includes } : { items };
+	const total = readTotal(parsed.data.total);
+	return {
+		items,
+		...(total !== undefined ? { total } : {}),
+		...(includes ? { includes } : {}),
+	};
 }
 
 function parseIncludes(

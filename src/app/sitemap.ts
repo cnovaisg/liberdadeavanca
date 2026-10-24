@@ -1,4 +1,5 @@
 import type { MetadataRoute } from "next";
+import { canonicalBlogPath } from "@/features/blog/fields";
 import blogService from "@/features/blog/services/blog.service";
 import { getSiteUrl } from "@/shared/lib/env";
 import { log } from "@/shared/lib/log";
@@ -19,7 +20,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 		for (const post of posts) {
 			const lastModified = new Date(post.updatedAt);
 			entries.push({
-				url: `${siteUrl}/blog/${encodeURIComponent(post.id)}`,
+				url: `${siteUrl}${canonicalBlogPath(post)}`,
 				...(Number.isNaN(lastModified.getTime()) ? {} : { lastModified }),
 			});
 		}

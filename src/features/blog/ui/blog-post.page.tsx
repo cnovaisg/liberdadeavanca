@@ -33,7 +33,7 @@ const BlogPost = ({ post }: BlogPostPageProps) => {
 
 				<ArticleInfo
 					authors={post.authors}
-					createdAt={post.createdAt}
+					createdAt={post.publishedAt}
 					updatedAt={post.updatedAt}
 					tags={<PostTags tags={post.tags} />}
 				/>

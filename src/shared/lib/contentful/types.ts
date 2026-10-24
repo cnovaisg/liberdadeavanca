@@ -29,4 +29,6 @@ export type ContentfulSys = {
 	createdAt: string;
 	updatedAt: string;
 	revision: number;
+	/** Present on published Delivery API entries. Absent on some previews. */
+	firstPublishedAt?: string;
 };
