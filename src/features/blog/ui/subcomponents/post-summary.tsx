@@ -1,7 +1,7 @@
 import Link from "next/link";
-import { richTextExcerpt } from "@/shared/lib/contentful/rich-text";
 import { SITE_UI_LOCALE } from "@/shared/lib/site";
 import ArticleInfo from "@/shared/ui/sections/article-info/article-info.section";
+import { blogPostSummaryText, canonicalBlogPath } from "../../fields";
 import type { PrunedBlogPostType } from "../../types";
 import PostTags from "./post-tags";
 
@@ -11,7 +11,7 @@ type PostSummaryProps = {
 };
 
 const PostSummary = ({ post, featured = false }: PostSummaryProps) => {
-	const excerpt = richTextExcerpt(post.value);
+	const summary = blogPostSummaryText(post);
 	const TitleTag = featured ? "h1" : "h2";
 	const titleId = `post-title-${post.id}`;
 	const titleClass = featured
@@ -24,7 +24,7 @@ const PostSummary = ({ post, featured = false }: PostSummaryProps) => {
 	return (
 		<article className="group relative flex flex-col space-y-5 shrink-0">
 			<Link
-				href={`/blog/${post.id}`}
+				href={canonicalBlogPath(post)}
 				aria-labelledby={titleId}
 				className="absolute inset-0 z-0 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-emerald-700"
 			/>
@@ -44,17 +44,17 @@ const PostSummary = ({ post, featured = false }: PostSummaryProps) => {
 
 				<ArticleInfo
 					authors={post.authors}
-					createdAt={post.createdAt}
+					createdAt={post.publishedAt}
 					updatedAt={post.updatedAt}
 					tags={<PostTags tags={post.tags} />}
 				/>
 
-				{featured && excerpt ? (
+				{summary ? (
 					<p
 						lang={SITE_UI_LOCALE}
 						className="hyphens-auto font-geist prose prose-sm prose-zinc font-[500] line-clamp-3"
 					>
-						{excerpt}
+						{summary}
 					</p>
 				) : null}
 

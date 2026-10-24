@@ -58,7 +58,9 @@ As páginas do blog guardam os pedidos ao Contentful durante 60 segundos e tamb�
 4. Cabeçalho: `x-revalidate-secret` = `<REVALIDATE_SECRET>`  
    (ou `Authorization: Bearer <REVALIDATE_SECRET>`).
 5. Método: só **POST**. Gatilhos: Entry **Publish**, **Unpublish** e **Delete** (tipos `blogPost` e `manifesto`). Tag **Create**, **Save** e **Delete** são opcionais: actualizam de imediato o nome de uma etiqueta. Sem eles, o nome novo aparece na mesma dentro de 60 segundos.
-6. Em caso de sucesso a rota revalida `/blog`, as listagens `/blog/tag/[tagId]` e, quando o corpo traz um id de entrada válido, `/blog/[postId]`. Publicações do manifesto revalidam `/manifesto`. Eventos de etiqueta também revalidam cada página `/blog/[postId]`.
+6. Em caso de sucesso a rota revalida `/blog`, as listagens `/blog/tag/[tagId]`, `/sitemap.xml` e `/rss.xml`. Quando o corpo traz um id de entrada válido, revalida também `/blog/<id>`. Se o corpo incluir `fields.slug` (texto ou mapa de locale) com um slug válido, revalida ainda `/blog/<slug>`. Publicações do manifesto revalidam `/manifesto`. Eventos de etiqueta também revalidam cada página `/blog/[postId]`.
+
+O payload por defeito do Contentful já inclui `fields`. Se o webhook tiver um corpo à medida, mantém `fields.slug` para o URL novo ser limpo na hora. Sem esse campo, o id continua a ser revalidado e a cache de dados do blog (etiqueta `blog`) expira na mesma.
 
 O corpo do pedido está limitado a 64 KB. Acima disso a rota responde **413**. As respostas de erro são genéricas; o motivo fica só nos logs.
 
@@ -101,6 +103,8 @@ Os logs do servidor são JSON com um campo `event` estável (ver `src/shared/lib
 | `contentful.tags_failed` | O pedido do catálogo de etiquetas falhou |
 | `contentful.tags_invalid` | O catálogo veio com uma forma inesperada |
 | `contentful.sitemap_failed` | O sitemap ficou só com as rotas estáticas |
+| `contentful.rss_failed` | O feed `/rss.xml` ficou sem artigos |
+| `blog.index_metadata_failed` | Os metadados da listagem do blog falharam |
 | `socialdata.fetch_failed` | Erro HTTP da SocialData |
 | `socialdata.user_missing` | Pesquisa vazia e id de perfil em falta |
 | `socialdata.postprocess_failed` | Erro inesperado no feed do X |
@@ -137,9 +141,29 @@ Os artigos mostram as etiquetas públicas de cada entrada (`metadata.tags`). O n
 
 Enquanto não houver etiquetas atribuídas e publicadas, a interface do blog esconde a linha de etiquetas.
 
+## Slug, resumo e data dos artigos
+
+O modelo `blogPost` aceita dois campos novos, ambos opcionais. Os ids têm de ser exactamente `slug` e `summary`. Artigos já publicados, sem estes campos, continuam a funcionar: o URL fica `/blog/<id da entrada>`, a listagem usa o primeiro parágrafo como resumo e a data cai para `sys.firstPublishedAt` ou `sys.createdAt`.
+
+O espaço guarda o conteúdo no locale da Delivery API (por defeito `en-US`, ou `CONTENTFUL_LOCALE`). A interface do site continua em `pt-PT`. Preenche os campos nesse locale.
+
+1. **slug** — Short text (Symbol), único, não obrigatório. Kebab-case: minúsculas, números e hífenes (`impostos-justos`), sem hífen no início, no fim ou a dobrar, no máximo 80 caracteres. Com slug, o URL público é `/blog/<slug>`. O endereço antigo `/blog/<id>` responde **308** para o slug.
+2. **summary** — Long text (Text), não obrigatório, no máximo 300 caracteres. Aparece na listagem, na meta description e no RSS. Vazio: usa-se o primeiro parágrafo do rich text.
+3. **date** — o campo Date que já existe. É a data pública do artigo (pt-PT). Vazio: `sys.firstPublishedAt`, depois `sys.createdAt`.
+
+Depois de preencher, publica a entrada. Um slug inválido é ignorado e o artigo mantém o URL pelo id.
+
+## Listagem, RSS e metadados
+
+`/blog` mostra 12 artigos por página (`?page=2`). O mesmo parâmetro funciona no filtro: `/blog/tag/<id>?page=2`. Página em falta, zero ou para lá da última responde 404. A página 1 não leva query.
+
+`/rss.xml` lista os últimos 50 artigos (título, link canónico, resumo, data). O `<head>` anuncia o feed com `rel="alternate"`.
+
+O título de cada página segue o modelo `%s · Liberdade Avança`. `metadataBase` é `SITE_URL` (por defeito `https://liberdadeavanca.vercel.app`). Ainda não há imagem Open Graph.
+
 ## Robots e sitemap
 
-`src/app/robots.ts` e `src/app/sitemap.ts` usam `SITE_URL` (ou `https://liberdadeavanca.vercel.app`). O sitemap inclui `/`, `/manifesto`, `/blog` e os artigos do Contentful. Se o Contentful falhar, o sitemap fica só com as três rotas estáticas.
+`src/app/robots.ts` e `src/app/sitemap.ts` usam `SITE_URL` (ou `https://liberdadeavanca.vercel.app`). O sitemap inclui `/`, `/manifesto`, `/blog` e os artigos do Contentful, no slug quando existir. Se o Contentful falhar, o sitemap fica só com as três rotas estáticas.
 
 ## Política de segurança de conteúdo
 

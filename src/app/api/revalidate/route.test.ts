@@ -179,9 +179,53 @@ describe("POST /api/revalidate", () => {
 		expect(body.paths).toContain("/blog");
 		expect(body.paths).toContain("/blog/post1");
 		expect(body.paths).toContain("/sitemap.xml");
+		expect(body.paths).toContain("/rss.xml");
 		expect(revalidateTag).toHaveBeenCalled();
 		expect(revalidatePath).toHaveBeenCalled();
 		expect(revalidatePath).toHaveBeenCalledWith("/sitemap.xml");
+	});
+
+	it("revalida o caminho do slug e o do id", async () => {
+		const response = await post({
+			headers: {
+				"x-revalidate-secret": "shared-revalidate-secret",
+				"x-contentful-topic": "ContentManagement.Entry.publish",
+			},
+			body: JSON.stringify({
+				sys: {
+					id: "post1",
+					contentType: { sys: { id: "blogPost" } },
+				},
+				fields: {
+					slug: { "en-US": "impostos-justos" },
+				},
+			}),
+		});
+
+		expect(response.status).toBe(200);
+		const body = await response.json();
+		expect(body.paths).toContain("/blog/post1");
+		expect(body.paths).toContain("/blog/impostos-justos");
+		expect(body.paths).toContain("/rss.xml");
+		expect(revalidatePath).toHaveBeenCalledWith("/blog/impostos-justos");
+		expect(revalidatePath).toHaveBeenCalledWith("/rss.xml");
+	});
+
+	it("ignora um slug inválido no webhook", async () => {
+		const response = await post({
+			headers: { "x-revalidate-secret": "shared-revalidate-secret" },
+			body: JSON.stringify({
+				sys: {
+					id: "post1",
+					contentType: { sys: { id: "blogPost" } },
+				},
+				fields: { slug: { "en-US": "../etc" } },
+			}),
+		});
+
+		const body = await response.json();
+		expect(body.paths).toContain("/blog/post1");
+		expect(body.paths).not.toContain("/blog/../etc");
 	});
 
 	it("revalidates manifesto for manifesto content type", async () => {

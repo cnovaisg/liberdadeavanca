@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
-import { notFound } from "next/navigation";
+import { notFound, permanentRedirect, unstable_rethrow } from "next/navigation";
 import { BlogPost, blogService } from "@/features/blog";
+import { articleMetadata } from "@/features/blog/metadata";
 import { log } from "@/shared/lib/log";
 
 type BlogPageProps = {
@@ -12,17 +13,15 @@ export async function generateMetadata({
 }: BlogPageProps): Promise<Metadata> {
 	try {
 		const { postId } = await params;
-		const post = await blogService.getPostById(postId);
+		const resolved = await blogService.resolveBlogPost(postId);
 
-		if (!post) {
+		if (resolved.status === "not_found") {
 			return { title: "Artigo não encontrado" };
 		}
 
-		return {
-			title: post.title,
-			description: post.subtitle,
-		};
+		return articleMetadata(resolved.post);
 	} catch (error) {
+		unstable_rethrow(error);
 		log.error("blog.post_metadata_failed", {
 			message: error instanceof Error ? error.message : "unknown",
 		});
@@ -32,13 +31,18 @@ export async function generateMetadata({
 
 const IndividualBlogPage = async ({ params }: BlogPageProps) => {
 	const { postId } = await params;
-	const post = await blogService.getPostById(postId);
+	const resolved = await blogService.resolveBlogPost(postId);
 
-	if (!post) {
+	if (resolved.status === "not_found") {
 		notFound();
 	}
 
-	return <BlogPost post={post} />;
+	// Next.js `permanentRedirect` responds with 308.
+	if (resolved.status === "redirect") {
+		permanentRedirect(resolved.to);
+	}
+
+	return <BlogPost post={resolved.post} />;
 };
 
 export default IndividualBlogPage;

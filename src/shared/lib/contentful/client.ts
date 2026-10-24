@@ -5,6 +5,8 @@ import type { ContentfulIncludes } from "./types";
 
 export type ContentfulEntriesResponse<T> = {
 	items: T[];
+	/** Collection size reported by the Delivery API, not the page length. */
+	total?: number;
 	includes?: ContentfulIncludes;
 };
 

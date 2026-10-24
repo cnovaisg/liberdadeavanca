@@ -35,6 +35,31 @@ describe("parseContentfulEntriesPayload", () => {
 		);
 	});
 
+	it("preserva o total da colecção", () => {
+		const parsed = parseContentfulEntriesPayload(
+			{
+				total: 42,
+				items: [{ sys: { id: "post-1" }, fields: { title: "Olá" } }],
+			},
+			"blogPost",
+		);
+
+		expect(parsed?.total).toBe(42);
+	});
+
+	it("ignora um total que não seja um inteiro", () => {
+		const parsed = parseContentfulEntriesPayload(
+			{
+				total: "42",
+				items: [{ sys: { id: "post-1" }, fields: {} }],
+			},
+			"blogPost",
+		);
+
+		expect(parsed?.items).toHaveLength(1);
+		expect(parsed?.total).toBeUndefined();
+	});
+
 	it("returns null for an unusable envelope", () => {
 		expect(parseContentfulEntriesPayload([], "blogPost")).toBeNull();
 		expect(JSON.stringify(errorLog?.mock.calls)).toContain(

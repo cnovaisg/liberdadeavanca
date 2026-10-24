@@ -7,8 +7,10 @@ import {
 	BLOG_TAGS_CACHE_TAG,
 	blogPostCacheTag,
 } from "@/features/blog";
+import { readWebhookSlug } from "@/features/blog/fields";
 import { MANIFESTO_CACHE_TAG } from "@/features/manifesto";
 import { isContentfulId } from "@/shared/lib/contentful/ids";
+import { getContentfulLocale } from "@/shared/lib/contentful/locale";
 import { mustRequireWebhookHmac } from "@/shared/lib/contentful/webhook-policy";
 import {
 	parseContentfulSigningSecrets,
@@ -57,11 +59,13 @@ const GENERIC_BAD_REQUEST = "Bad request";
  *
  * The secret must not be passed in the query string (avoids log/referrer leaks).
  * On success the route revalidates:
- *   - blog: `/blog`, `/blog/tag/[tagId]`, `/sitemap.xml`, and optionally `/blog/[postId]`
+ *   - blog: `/blog`, `/blog/tag/[tagId]`, `/sitemap.xml`, `/rss.xml`, and
+ *     optionally `/blog/<id>` plus `/blog/<slug>` when the payload carries a
+ *     valid kebab-case slug (`fields.slug`, plain or localized)
  *   - manifesto: `/manifesto`
  * Tag events also revalidate every blog post page, because display names live there.
  * Blog publish, unpublish, delete, and tag changes also revalidate `/sitemap.xml`
- * so the sitemap drops stale posts without waiting for the next deploy.
+ * and `/rss.xml` so both drop stale posts without waiting for the next deploy.
  */
 
 type ContentfulWebhookBody = {
@@ -72,12 +76,14 @@ type ContentfulWebhookBody = {
 	};
 	entryId?: unknown;
 	entityId?: unknown;
+	fields?: unknown;
 };
 
 type WebhookTarget = {
 	isTag: boolean;
 	entryId?: string;
 	contentTypeId?: string;
+	slug?: string;
 };
 
 const jsonError = (status: number, message: string) =>
@@ -137,17 +143,19 @@ const readWebhookTarget = (
 			asEntryId(body?.entryId) ??
 			asEntryId(body?.entityId),
 		contentTypeId: asContentTypeId(body?.sys?.contentType?.sys?.id),
+		slug: readWebhookSlug(body.fields, getContentfulLocale()),
 	};
 };
 
-const revalidateBlog = ({ isTag, entryId }: WebhookTarget) => {
+const revalidateBlog = ({ isTag, entryId, slug }: WebhookTarget) => {
 	revalidateTag(BLOG_CACHE_TAG, { expire: 0 });
 	revalidateTag(BLOG_TAGS_CACHE_TAG, { expire: 0 });
 	revalidatePath("/blog");
 	revalidatePath("/blog/tag/[tagId]", "page");
 	revalidatePath("/sitemap.xml");
+	revalidatePath("/rss.xml");
 
-	const paths = ["/blog", "/blog/tag/[tagId]", "/sitemap.xml"];
+	const paths = ["/blog", "/blog/tag/[tagId]", "/sitemap.xml", "/rss.xml"];
 
 	if (isTag) {
 		revalidatePath("/blog/[postId]", "page");
@@ -158,6 +166,11 @@ const revalidateBlog = ({ isTag, entryId }: WebhookTarget) => {
 		revalidateTag(blogPostCacheTag(entryId), { expire: 0 });
 		revalidatePath(`/blog/${entryId}`);
 		paths.push(`/blog/${entryId}`);
+	}
+
+	if (slug && slug !== entryId) {
+		revalidatePath(`/blog/${slug}`);
+		paths.push(`/blog/${slug}`);
 	}
 
 	return paths;
@@ -183,6 +196,7 @@ const webhookBodySchema = z.looseObject({
 		.optional(),
 	entryId: z.unknown().optional(),
 	entityId: z.unknown().optional(),
+	fields: z.unknown().optional(),
 });
 
 const declaredBodyTooLarge = (request: Request) => {

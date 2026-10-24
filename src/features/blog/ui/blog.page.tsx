@@ -1,5 +1,7 @@
 import Link from "next/link";
+import type { BlogPaginationLinks } from "../pagination";
 import type { BlogTag, PrunedBlogPostType } from "../types";
+import BlogPagination from "./subcomponents/blog-pagination";
 import PostSummary from "./subcomponents/post-summary";
 
 type BlogProps = {
@@ -8,6 +10,7 @@ type BlogProps = {
 	tag?: BlogTag | null;
 	/** True when the visitor opened `/blog/tag/...` (even if the tag is unknown). */
 	filtered?: boolean;
+	pagination?: BlogPaginationLinks;
 };
 
 const clearFilterClassName =
@@ -36,10 +39,18 @@ const emptyFilterMessage = (tag: BlogTag | null) => {
 	return "Nenhum artigo com esta etiqueta.";
 };
 
-const Blog = ({ posts, tag = null, filtered = false }: BlogProps) => {
-	const [featured, ...rest] = posts;
+const Blog = ({
+	posts,
+	tag = null,
+	filtered = false,
+	pagination,
+}: BlogProps) => {
+	const currentPage = pagination?.page ?? 1;
+	const showFeatured = currentPage === 1;
+	const featured = showFeatured ? posts[0] : undefined;
+	const rest = showFeatured ? posts.slice(1) : posts;
 
-	if (!featured) {
+	if (!featured && rest.length === 0) {
 		return (
 			<div className="flex flex-col w-full h-full shrink-0 overflow-y-auto">
 				<div className="pt-8 flex flex-col space-y-3">
@@ -60,15 +71,22 @@ const Blog = ({ posts, tag = null, filtered = false }: BlogProps) => {
 	return (
 		<div className="flex flex-col w-full h-full shrink-0 overflow-y-auto">
 			<div className="pt-8 flex flex-col space-y-10 pb-10">
+				{!showFeatured ? (
+					<h1 className="text-5xl text-emerald-900 tracking-wider font-anton">
+						BLOG
+					</h1>
+				) : null}
 				{filtered ? <TagFilterNotice tag={tag} /> : null}
 
-				<PostSummary post={featured} featured />
+				{featured ? <PostSummary post={featured} featured /> : null}
 
 				{rest.length > 0 ? (
 					<div className="flex flex-col space-y-8">
-						<h2 className="font-anton text-sm text-emerald-600 tracking-widest">
-							MAIS ARTIGOS
-						</h2>
+						{showFeatured ? (
+							<h2 className="font-anton text-sm text-emerald-600 tracking-widest">
+								MAIS ARTIGOS
+							</h2>
+						) : null}
 						<ul className="flex flex-col divide-y divide-zinc-100">
 							{rest.map((post) => (
 								<li key={post.id} className="py-8 first:pt-0">
@@ -78,6 +96,8 @@ const Blog = ({ posts, tag = null, filtered = false }: BlogProps) => {
 						</ul>
 					</div>
 				) : null}
+
+				{pagination ? <BlogPagination pagination={pagination} /> : null}
 			</div>
 		</div>
 	);

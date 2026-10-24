@@ -41,6 +41,30 @@ describe("sitemap", () => {
 		]);
 	});
 
+	it("usa o slug no sitemap quando o artigo o tem", async () => {
+		getLatestBlogPosts.mockResolvedValue([
+			{
+				id: "post-1",
+				slug: "impostos-justos",
+				updatedAt: "2026-03-01T00:00:00.000Z",
+			},
+			{
+				id: "post-2",
+				updatedAt: "2026-03-02T00:00:00.000Z",
+			},
+		]);
+
+		const entries = await sitemap();
+
+		expect(entries.map((entry) => entry.url)).toEqual([
+			"https://liberdadeavanca.vercel.app",
+			"https://liberdadeavanca.vercel.app/manifesto",
+			"https://liberdadeavanca.vercel.app/blog",
+			"https://liberdadeavanca.vercel.app/blog/impostos-justos",
+			"https://liberdadeavanca.vercel.app/blog/post-2",
+		]);
+	});
+
 	it("fica só com as rotas estáticas se o Contentful falhar", async () => {
 		getLatestBlogPosts.mockRejectedValue(new Error("Contentful API error"));
 
