@@ -18,9 +18,11 @@ const generateParsedAuthorsNames = (authors?: Author[]) => {
 const Authors = ({ authors }: AuthorsProps) => {
 	const postprocessedAuthors = generateParsedAuthorsNames(authors);
 
+	const label = authors.length === 1 ? "autor:" : "autores:";
+
 	return (
 		<div className="flex items-center space-x-2">
-			<LabelValue label="autores:" value={postprocessedAuthors as string} />
+			<LabelValue label={label} value={postprocessedAuthors} />
 		</div>
 	);
 };
