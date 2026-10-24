@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { Blog, blogService } from "@/features/blog";
+import { log } from "@/shared/lib/log";
 
 type BlogTagPageProps = {
 	params: Promise<{ tagId: string }>;
@@ -22,7 +23,9 @@ export async function generateMetadata({
 			description: `Artigos com a etiqueta ${tag.name}.`,
 		};
 	} catch (error) {
-		console.error("Não foi possível gerar os metadados da etiqueta", error);
+		log.error("blog.tag_metadata_failed", {
+			message: error instanceof Error ? error.message : "unknown",
+		});
 		return { title: "Etiqueta" };
 	}
 }

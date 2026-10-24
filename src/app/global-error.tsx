@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import { log } from "@/shared/lib/log";
 import { SITE_UI_LOCALE } from "@/shared/lib/site";
 import "./globals.css";
 
@@ -11,7 +12,10 @@ type GlobalErrorProps = {
 
 const GlobalError = ({ error, reset }: GlobalErrorProps) => {
 	useEffect(() => {
-		console.error(error);
+		log.error("app.global_error", {
+			message: error.message,
+			digest: error.digest,
+		});
 	}, [error]);
 
 	return (

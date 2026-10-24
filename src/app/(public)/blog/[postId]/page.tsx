@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { BlogPost, blogService } from "@/features/blog";
+import { log } from "@/shared/lib/log";
 
 type BlogPageProps = {
 	params: Promise<{ postId: string }>;
@@ -22,7 +23,9 @@ export async function generateMetadata({
 			description: post.subtitle,
 		};
 	} catch (error) {
-		console.error("Não foi possível gerar os metadados do artigo", error);
+		log.error("blog.post_metadata_failed", {
+			message: error instanceof Error ? error.message : "unknown",
+		});
 		return { title: "Artigo" };
 	}
 }
