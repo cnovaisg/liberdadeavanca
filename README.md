@@ -163,7 +163,7 @@ O título de cada página segue o modelo `%s · Liberdade Avança`. `metadataBas
 
 ## Robots e sitemap
 
-`src/app/robots.ts` e `src/app/sitemap.ts` usam `SITE_URL` (ou `https://liberdadeavanca.vercel.app`). O sitemap inclui `/`, `/manifesto`, `/blog` e os artigos do Contentful, no slug quando existir. Se o Contentful falhar, o sitemap fica só com as três rotas estáticas.
+`src/app/robots.ts` aponta para `/sitemap.xml`. O sitemap é um route handler (`src/app/sitemap.xml/route.ts`), com a mesma janela de 60 segundos e a mesma revalidação por caminho que `/rss.xml`. O helper de metadados `app/sitemap.ts` ficava na cópia do deploy na CDN da Vercel (`x-vercel-cache: HIT`) e o webhook não a substituía. O XML inclui `/`, `/manifesto`, `/blog` e os artigos, no slug quando existir e no id quando não. Se o Contentful falhar, ficam só as três rotas estáticas.
 
 ## Política de segurança de conteúdo
 
