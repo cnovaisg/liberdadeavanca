@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect } from "react";
+import { log } from "@/shared/lib/log";
 
 type PublicErrorProps = {
 	error: Error & { digest?: string };
@@ -13,7 +14,10 @@ const actionClassName =
 
 const PublicError = ({ error, reset }: PublicErrorProps) => {
 	useEffect(() => {
-		console.error(error);
+		log.error("app.page_error", {
+			message: error.message,
+			digest: error.digest,
+		});
 	}, [error]);
 
 	return (
