@@ -1,6 +1,21 @@
-import { getSocialDataCredentials } from "@/shared/lib/env";
+import { unstable_rethrow } from "next/navigation";
+import blogService from "@/features/blog/services/blog.service";
+import {
+	DEFAULT_SITE_URL,
+	getSiteUrl,
+	getSocialDataCredentials,
+} from "@/shared/lib/env";
 import { log } from "@/shared/lib/log";
 import { SITE_UI_LOCALE } from "@/shared/lib/site";
+import {
+	blogParamFromExpandedUrl,
+	readTweetCardTitle,
+	renderTweetText,
+	siteHostsFromOrigins,
+	type TweetCard,
+	type TweetUrlEntity,
+	urlsKeptInTweet,
+} from "../tweet-text";
 
 /**
  * Data Cache TTL for SocialData. The homepage stays dynamic because of the
@@ -10,11 +25,21 @@ import { SITE_UI_LOCALE } from "@/shared/lib/site";
  */
 export const X_FEED_REVALIDATE_SECONDS = 60;
 
+type SocialDataUrl = {
+	url?: string;
+	expanded_url?: string;
+	display_url?: string;
+};
+
 type SocialDataTweet = {
 	tweet_created_at?: string;
 	full_text?: string;
 	id_str?: string;
+	entities?: { urls?: SocialDataUrl[] };
+	card?: TweetCard;
 };
+
+type LabeledTweetUrl = TweetUrlEntity & { label: string };
 
 const LISBON_TIME_ZONE = "Europe/Lisbon";
 const MISSING_DATE_PART = "—";
@@ -62,6 +87,67 @@ export function formatTweetDate(rawDate?: string): {
 		hour: `${hour}:${minute}`,
 		day: `${day}/${month}`,
 	};
+}
+
+function plainLabel(url: TweetUrlEntity): string {
+	return url.displayUrl?.trim() || url.expandedUrl?.trim() || url.url;
+}
+
+/**
+ * Own-site articles use the Contentful title (same slug cache as the blog).
+ * The last external link uses the tweet card title when SocialData sends one.
+ */
+export async function labelTweetUrls(
+	fullText: string,
+	urls: SocialDataUrl[] | undefined,
+	cardTitle: string | undefined,
+): Promise<LabeledTweetUrl[]> {
+	const entities = (urls ?? [])
+		.map((url) => ({
+			url: url.url?.trim() ?? "",
+			expandedUrl: url.expanded_url?.trim(),
+			displayUrl: url.display_url?.trim(),
+		}))
+		.filter((url) => url.url && fullText.includes(url.url));
+
+	const hosts = siteHostsFromOrigins([getSiteUrl(), DEFAULT_SITE_URL]);
+	const titles = new Map<string, string>();
+	const visible = new Set(urlsKeptInTweet(fullText, entities));
+	const params = [
+		...new Set(
+			entities
+				.filter((url) => visible.has(url))
+				.map((url) => blogParamFromExpandedUrl(url.expandedUrl, hosts))
+				.filter((param): param is string => Boolean(param)),
+		),
+	];
+
+	await Promise.all(
+		params.map(async (param) => {
+			try {
+				const resolved = await blogService.resolveBlogPost(param);
+				if (resolved.status === "not_found") return;
+				const title = resolved.post.title.trim();
+				if (title) titles.set(param, title);
+			} catch (error) {
+				unstable_rethrow(error);
+				log.error("socialdata.post_title_failed", {
+					message: error instanceof Error ? error.message : "unknown",
+				});
+			}
+		}),
+	);
+
+	return entities.map((url, index) => {
+		const param = blogParamFromExpandedUrl(url.expandedUrl, hosts);
+		const postTitle = param ? titles.get(param) : undefined;
+		const isLast = index === entities.length - 1;
+		const label =
+			postTitle ||
+			(!param && isLast ? cardTitle : undefined) ||
+			plainLabel(url);
+		return { ...url, label };
+	});
 }
 
 class SocialDataXService {
@@ -135,18 +221,34 @@ class SocialDataXService {
 				config.twitterRoot,
 				config.headers,
 			);
-			const postprocessedResults =
-				results?.tweets
-					?.map((tweet: SocialDataTweet) => {
+			const tweets: SocialDataTweet[] = Array.isArray(results?.tweets)
+				? results.tweets
+				: [];
+			const postprocessedResults = (
+				await Promise.all(
+					tweets.map(async (tweet) => {
+						const fullText = tweet.full_text ?? "";
+						const urls = await labelTweetUrls(
+							fullText,
+							tweet.entities?.urls,
+							readTweetCardTitle(tweet.card),
+						);
 						return {
 							date: formatTweetDate(tweet.tweet_created_at),
-							text: tweet.full_text,
+							text: renderTweetText(fullText, urls),
 							id: tweet.id_str,
 						};
-					})
-					.filter(
-						(tweet: { text?: string; id?: string }) => tweet.text && tweet.id,
-					) ?? [];
+					}),
+				)
+			).filter(
+				(
+					tweet,
+				): tweet is {
+					date: { hour: string; day: string };
+					text: string;
+					id: string;
+				} => Boolean(tweet.text && tweet.id),
+			);
 			return postprocessedResults;
 		} catch (error) {
 			log.error("socialdata.postprocess_failed", {
