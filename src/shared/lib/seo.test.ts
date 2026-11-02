@@ -1,6 +1,11 @@
 import { describe, expect, it } from "vitest";
 import { DEFAULT_SITE_URL, getSiteUrl } from "./env";
-import { pageMetadata, rootMetadata, SITE_TITLE_TEMPLATE } from "./seo";
+import {
+	pageAlternates,
+	pageMetadata,
+	rootMetadata,
+	SITE_TITLE_TEMPLATE,
+} from "./seo";
 
 describe("metadados do site", () => {
 	it("define metadataBase, o template de título e o feed RSS", () => {
@@ -21,6 +26,7 @@ describe("metadados do site", () => {
 				url: `${siteUrl}/rss.xml`,
 			},
 		]);
+		expect(metadata.alternates?.canonical).toBeUndefined();
 		expect(metadata.openGraph).toMatchObject({
 			type: "website",
 			locale: "pt_PT",
@@ -36,7 +42,11 @@ describe("metadados do site", () => {
 			canonicalPath: "/manifesto",
 		});
 
+		expect(metadata.alternates).toEqual(pageAlternates("/manifesto"));
 		expect(metadata.alternates?.canonical).toBe("/manifesto");
+		expect(metadata.alternates?.types?.["application/rss+xml"]).toEqual(
+			rootMetadata().alternates?.types?.["application/rss+xml"],
+		);
 		expect(metadata.openGraph).toMatchObject({
 			type: "website",
 			title: "Manifesto",

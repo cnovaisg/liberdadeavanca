@@ -65,8 +65,11 @@ const GENERIC_BAD_REQUEST = "Bad request";
  *   - manifesto: `/manifesto`
  * Tag events also revalidate every blog post page, because display names live there.
  * Blog publish, unpublish, delete, and tag changes also revalidate `/sitemap.xml`
- * and `/rss.xml`. Both are route handlers, so `revalidatePath` drops the CDN
- * copy. A metadata `app/sitemap.ts` would keep serving the deploy snapshot.
+ * and `/rss.xml`. `/rss.xml` is a cached route handler, so `revalidatePath`
+ * drops that copy. `/sitemap.xml` is rendered per request and reads the `blog`
+ * fetch tag, so `revalidateTag("blog")` is what removes an unpublished post.
+ * A metadata `app/sitemap.ts`, or this route with `revalidate = 60`, stays a
+ * CDN HIT of the deploy snapshot.
  */
 
 type ContentfulWebhookBody = {

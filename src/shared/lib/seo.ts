@@ -14,6 +14,33 @@ export const SITE_OG_LOCALE = "pt_PT";
 
 export const RSS_PATH = "/rss.xml";
 
+/**
+ * Child `alternates` replaces the layout object, so a page that sets only
+ * `canonical` drops this feed link. Pages that set a canonical must pass the
+ * same `types` again (see `pageAlternates`).
+ */
+export function rssAlternateTypes(): NonNullable<
+	Metadata["alternates"]
+>["types"] {
+	const siteUrl = getSiteUrl();
+	return {
+		"application/rss+xml": [
+			{
+				title: SITE_NAME,
+				url: `${siteUrl}${RSS_PATH}`,
+			},
+		],
+	};
+}
+
+/** Canonical plus the site RSS feed. Safe to set on any page. */
+export function pageAlternates(canonicalPath: string): Metadata["alternates"] {
+	return {
+		canonical: canonicalPath,
+		types: rssAlternateTypes(),
+	};
+}
+
 export function rootMetadata(): Metadata {
 	const siteUrl = getSiteUrl();
 
@@ -25,14 +52,7 @@ export function rootMetadata(): Metadata {
 		},
 		description: SITE_DESCRIPTION,
 		alternates: {
-			types: {
-				"application/rss+xml": [
-					{
-						title: SITE_NAME,
-						url: `${siteUrl}${RSS_PATH}`,
-					},
-				],
-			},
+			types: rssAlternateTypes(),
 		},
 		openGraph: {
 			type: "website",
@@ -97,7 +117,7 @@ export function pageMetadata(input: PageMetadataInput): Metadata {
 	return {
 		title,
 		description,
-		alternates: { canonical: canonicalPath },
+		alternates: pageAlternates(canonicalPath),
 		openGraph,
 		twitter: {
 			card: "summary_large_image",

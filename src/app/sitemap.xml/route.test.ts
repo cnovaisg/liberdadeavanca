@@ -8,7 +8,7 @@ vi.mock("@/features/blog/services/blog.service", () => ({
 	},
 }));
 
-import { GET, revalidate } from "./route";
+import { dynamic, GET } from "./route";
 
 describe("GET /sitemap.xml", () => {
 	let errorLog: ReturnType<typeof vi.spyOn> | undefined;
@@ -19,8 +19,8 @@ describe("GET /sitemap.xml", () => {
 		errorLog = vi.spyOn(console, "error").mockImplementation(() => {});
 	});
 
-	it("partilha a janela de 60 s com o RSS", () => {
-		expect(revalidate).toBe(60);
+	it("não fica na cópia estática do deploy", () => {
+		expect(dynamic).toBe("force-dynamic");
 	});
 
 	it("responde com XML, slug canónico e o content-type correcto", async () => {
@@ -28,6 +28,7 @@ describe("GET /sitemap.xml", () => {
 			{
 				id: "entry-id",
 				slug: "teste-de-funcionalidades",
+				publishedAt: "2026-02-01T00:00:00.000Z",
 				updatedAt: "2026-03-01T00:00:00.000Z",
 			},
 		]);
@@ -39,6 +40,9 @@ describe("GET /sitemap.xml", () => {
 		expect(response.headers.get("content-type")).toBe(
 			"application/xml; charset=utf-8",
 		);
+		expect(response.headers.get("cache-control")).toBe(
+			"private, no-cache, no-store, max-age=0, must-revalidate",
+		);
 		expect(body).toContain("<loc>https://liberdadeavanca.vercel.app</loc>");
 		expect(body).toContain(
 			"<loc>https://liberdadeavanca.vercel.app/manifesto</loc>",
@@ -49,6 +53,8 @@ describe("GET /sitemap.xml", () => {
 		expect(body).toContain(
 			"<loc>https://liberdadeavanca.vercel.app/blog/teste-de-funcionalidades</loc>",
 		);
+		expect(body).toContain("<lastmod>2026-03-01T00:00:00.000Z</lastmod>");
+		expect(body).not.toContain("2026-02-01T00:00:00.000Z");
 		expect(body).not.toContain("/blog/entry-id");
 		expect(getLatestBlogPosts).toHaveBeenCalledWith(1000);
 	});

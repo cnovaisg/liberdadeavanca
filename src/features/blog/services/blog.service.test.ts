@@ -16,6 +16,7 @@ vi.mock("@/shared/lib/contentful/tags", async () => {
 
 import { fetchContentfulEntries } from "@/shared/lib/contentful/client";
 import { fetchPublicTags } from "@/shared/lib/contentful/tags";
+import { BLOG_CACHE_TAG, BLOG_TAGS_CACHE_TAG } from "./blog.cache";
 import blogService from "./blog.service";
 
 const entry = {
@@ -126,7 +127,9 @@ describe("BlogService", () => {
 			slug: "impostos-justos",
 			summary: "uma nota",
 			publishedAt: "2026-05-04T00:00:00.000Z",
+			updatedAt: "2026-01-02T00:00:00.000Z",
 		});
+		expect(posts[0]?.updatedAt).not.toBe("2026-04-01T08:00:00.000Z");
 		expect(posts[1]?.slug).toBeUndefined();
 		expect(posts[1]?.summary).toBeUndefined();
 		expect(posts[1]?.publishedAt).toBe("2026-04-01T08:00:00.000Z");
@@ -240,6 +243,34 @@ describe("BlogService", () => {
 					limit: "12",
 					skip: "12",
 				}),
+			}),
+		);
+	});
+
+	it("marca a lista grande do sitemap com a mesma etiqueta que o RSS", async () => {
+		vi.mocked(fetchContentfulEntries).mockResolvedValue({ items: [] });
+		vi.mocked(fetchPublicTags).mockResolvedValue([]);
+
+		await blogService.getLatestBlogPosts(1000);
+		await blogService.getLatestBlogPosts(50);
+
+		expect(fetchContentfulEntries).toHaveBeenCalledTimes(2);
+		for (const [options] of vi.mocked(fetchContentfulEntries).mock.calls) {
+			expect(options?.next).toMatchObject({
+				revalidate: 60,
+				tags: [BLOG_CACHE_TAG, BLOG_TAGS_CACHE_TAG],
+			});
+		}
+		expect(fetchContentfulEntries).toHaveBeenNthCalledWith(
+			1,
+			expect.objectContaining({
+				searchParams: expect.objectContaining({ limit: "1000" }),
+			}),
+		);
+		expect(fetchContentfulEntries).toHaveBeenNthCalledWith(
+			2,
+			expect.objectContaining({
+				searchParams: expect.objectContaining({ limit: "50" }),
 			}),
 		);
 	});

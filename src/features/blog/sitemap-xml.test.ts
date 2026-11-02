@@ -39,6 +39,22 @@ describe("sitemap XML", () => {
 		expect(urls[3]?.lastmod).toBe("2026-03-01T00:00:00.000Z");
 	});
 
+	it("usa a data de actualização e não a primeira publicação", () => {
+		const urls = sitemapUrls({
+			siteUrl,
+			posts: [
+				{
+					id: "post-1",
+					slug: "milei-e-o-mercado-de-arrendamento",
+					updatedAt: "2026-10-25T13:47:11.498Z",
+				},
+			],
+		});
+
+		expect(urls[3]?.lastmod).toBe("2026-10-25T13:47:11.498Z");
+		expect(urls[3]?.lastmod).not.toBe("2026-10-24T23:00:00.000Z");
+	});
+
 	it("usa o slug e ignora uma data de actualização inválida", () => {
 		const urls = sitemapUrls({
 			siteUrl,

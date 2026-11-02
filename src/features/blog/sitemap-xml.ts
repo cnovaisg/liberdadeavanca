@@ -21,6 +21,7 @@ export function sitemapUrls(input: {
 	}));
 
 	for (const post of input.posts) {
+		// `updatedAt` is Contentful `sys.updatedAt`, not the first publish.
 		const lastModified = new Date(post.updatedAt);
 		entries.push({
 			loc: `${siteUrl}${canonicalBlogPath(post)}`,
