@@ -40,6 +40,12 @@ describe("metadados do blog", () => {
 		expect(metadata.title).toBe("Impostos");
 		expect(metadata.description).toBe("Um resumo");
 		expect(metadata.alternates?.canonical).toBe("/blog/impostos-justos");
+		expect(metadata.alternates?.types?.["application/rss+xml"]).toEqual([
+			{
+				title: "Liberdade Avança",
+				url: "https://liberdadeavanca.vercel.app/rss.xml",
+			},
+		]);
 		expect(metadata.openGraph).toMatchObject({
 			type: "article",
 			publishedTime: "2026-05-04T00:00:00.000Z",

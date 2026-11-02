@@ -1,11 +1,9 @@
 import type { Metadata } from "next";
 import { notFound, unstable_rethrow } from "next/navigation";
-import { Suspense } from "react";
 import { Blog, blogService } from "@/features/blog";
 import { blogIndexMetadata } from "@/features/blog/metadata";
 import { parseBlogPageParam } from "@/features/blog/pagination";
 import { log } from "@/shared/lib/log";
-import Spinner from "@/shared/ui/components/spinner/spinner";
 
 type BlogPageProps = {
 	searchParams: Promise<{ page?: string | string[] }>;
@@ -31,6 +29,12 @@ export async function generateMetadata({
 	}
 }
 
+/**
+ * This is the page itself. `notFound()` inside `<Suspense>` streams a 200
+ * and only then paints the not-found UI (`/blog?page=2` was that soft 404).
+ * Invalid values (`0`, `foo`) and pages past the last one both 404, same as
+ * `/blog/tag/[tagId]`.
+ */
 export async function BlogIndex({ searchParams }: BlogPageProps) {
 	const page = parseBlogPageParam((await searchParams).page);
 	if (page === null) notFound();
@@ -50,12 +54,4 @@ export async function BlogIndex({ searchParams }: BlogPageProps) {
 	);
 }
 
-const BlogPage = (props: BlogPageProps) => {
-	return (
-		<Suspense fallback={<Spinner />}>
-			<BlogIndex {...props} />
-		</Suspense>
-	);
-};
-
-export default BlogPage;
+export default BlogIndex;

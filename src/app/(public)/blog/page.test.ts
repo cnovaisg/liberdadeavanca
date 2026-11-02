@@ -16,7 +16,7 @@ vi.mock("@/features/blog", () => ({
 
 import { notFound } from "next/navigation";
 import { blogService } from "@/features/blog";
-import { BlogIndex, generateMetadata } from "./page";
+import BlogPage, { BlogIndex, generateMetadata } from "./page";
 
 const search = (page?: string) =>
 	Promise.resolve(page === undefined ? {} : { page });
@@ -24,6 +24,10 @@ const search = (page?: string) =>
 describe("BlogIndex", () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
+	});
+
+	it("é a própria página, para o 404 não ficar dentro de Suspense", () => {
+		expect(BlogPage).toBe(BlogIndex);
 	});
 
 	it("pede a página 1 quando o query não traz page", async () => {

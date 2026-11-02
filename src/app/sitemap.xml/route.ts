@@ -8,14 +8,17 @@ import { getSiteUrl } from "@/shared/lib/env";
 import { log } from "@/shared/lib/log";
 
 /**
- * Same cache window and purge path as `/rss.xml`.
+ * Render on each request. `revalidate = 60` prerenders this URL as a static
+ * file (build output: revalidate 1m, expire 1y). On Vercel that file stays
+ * `x-vercel-cache: HIT` and `revalidatePath("/sitemap.xml")` does not replace
+ * it, so an unpublished post remains listed after the webhook.
  *
- * `app/sitemap.ts` (the metadata helper) is prerendered with the deploy.
- * On Vercel that copy stays a CDN HIT (`x-vercel-cache`) and
- * `revalidatePath("/sitemap.xml")` does not drop it, even with
- * `revalidate = 60`. A route handler is invalidated with the feed.
+ * The post list still comes from `getLatestBlogPosts`, which uses the `blog`
+ * fetch tag and the same 60s window as `/rss.xml` and `/blog`. The webhook's
+ * `revalidateTag("blog")` drops that entry; the next request reads published
+ * posts, including `sys.updatedAt` for `<lastmod>`.
  */
-export const revalidate = 60;
+export const dynamic = "force-dynamic";
 
 export async function GET() {
 	let posts: Awaited<ReturnType<typeof blogService.getLatestBlogPosts>> = [];
@@ -38,6 +41,8 @@ export async function GET() {
 	return new Response(xml, {
 		headers: {
 			"Content-Type": "application/xml; charset=utf-8",
+			"Cache-Control":
+				"private, no-cache, no-store, max-age=0, must-revalidate",
 		},
 	});
 }
