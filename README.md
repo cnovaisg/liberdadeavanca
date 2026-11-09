@@ -22,20 +22,20 @@ npm run build
 
 Copia `.env.example` para `.env.local`. Na Vercel usa as mesmas chaves. Não faças commit de segredos.
 
-| Variável | Função |
-| --- | --- |
-| `CONTENTFUL_SPACE_ID` | Id do espaço Contentful |
-| `CONTENTFUL_API_BASE_URL` | Só Delivery: `https://cdn.contentful.com` (ou Preview: `https://preview.contentful.com`). Nunca `api.contentful.com` |
-| `CONTENTFUL_API_ACCESS_TOKEN` | Token de **Content Delivery** (ou Preview) — não é o token de Management (CMA) |
-| `CONTENTFUL_ENVIRONMENT` | Ambiente do espaço. Por defeito `master`. Letras, números, `_` e `-` |
-| `CONTENTFUL_LOCALE` | Locale opcional dos pedidos à Delivery API (por defeito `en-US`, BCP 47). A língua da interface é `pt-PT` |
+| Variável                            | Função                                                                                                                                                                                                                      |
+| ----------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `CONTENTFUL_SPACE_ID`               | Id do espaço Contentful                                                                                                                                                                                                     |
+| `CONTENTFUL_API_BASE_URL`           | Só Delivery: `https://cdn.contentful.com` (ou Preview: `https://preview.contentful.com`). Nunca `api.contentful.com`                                                                                                        |
+| `CONTENTFUL_API_ACCESS_TOKEN`       | Token de **Content Delivery** (ou Preview) — não é o token de Management (CMA)                                                                                                                                              |
+| `CONTENTFUL_ENVIRONMENT`            | Ambiente do espaço. Por defeito `master`. Letras, números, `_` e `-`                                                                                                                                                        |
+| `CONTENTFUL_LOCALE`                 | Locale opcional dos pedidos à Delivery API (por defeito `en-US`, BCP 47). A língua da interface é `pt-PT`                                                                                                                   |
 | `CONTENTFUL_WEBHOOK_SIGNING_SECRET` | Segredo HMAC do webhook ao nível do espaço (Settings → Webhooks → Settings). **Obrigatório na Production e na Preview da Vercel**; opcional em desenvolvimento local. Dois segredos separados por vírgula durante a rotação |
-| `REVALIDATE_SECRET` | Segredo partilhado do webhook de revalidação |
-| `SITE_URL` | Origem pública em `https`, sem caminho. Por defeito `https://liberdadeavanca.vercel.app`. Usada no `robots.txt`, no sitemap e em `metadataBase` |
-| `ACCOUNT_MAIL` | Endereço do ícone de correio (`mailto`) |
-| `SOCIAL_DATA_X_ACCOUNT` | Conta X/Twitter do feed da página inicial. As respostas ficam em cache 60 segundos |
-| `SOCIAL_DATA_BASE_URL` | Host da SocialData — só `https://api.socialdata.tools` (lista de permissão) |
-| `SOCIAL_DATA_API_KEY` | Chave da API SocialData |
+| `REVALIDATE_SECRET`                 | Segredo partilhado do webhook de revalidação                                                                                                                                                                                |
+| `SITE_URL`                          | Origem pública em `https`, sem caminho. Por defeito `https://liberdadeavanca.vercel.app`. Usada no `robots.txt`, no sitemap e em `metadataBase`                                                                             |
+| `ACCOUNT_MAIL`                      | Endereço do ícone de correio (`mailto`)                                                                                                                                                                                     |
+| `SOCIAL_DATA_X_ACCOUNT`             | Conta X/Twitter do feed da página inicial. As respostas ficam em cache 60 segundos                                                                                                                                          |
+| `SOCIAL_DATA_BASE_URL`              | Host da SocialData — só `https://api.socialdata.tools` (lista de permissão)                                                                                                                                                 |
+| `SOCIAL_DATA_API_KEY`               | Chave da API SocialData                                                                                                                                                                                                     |
 
 ### Rotação de segredos
 
@@ -96,25 +96,25 @@ Painel: [Firewall](https://vercel.com/carlos-novais-projects/liberdadeavanca/fir
 
 Os logs do servidor são JSON com um campo `event` estável (ver `src/shared/lib/log.ts`), pesquisável nos [Runtime Logs](https://vercel.com/carlos-novais-projects/liberdadeavanca/logs):
 
-| Evento | Significado |
-| --- | --- |
-| `contentful.fetch_failed` | O pedido de entradas à CDA falhou (estado / tipo de conteúdo) |
-| `contentful.response_invalid` | O JSON das entradas não tem a forma esperada; a página degrada |
-| `contentful.tags_failed` | O pedido do catálogo de etiquetas falhou |
-| `contentful.tags_invalid` | O catálogo veio com uma forma inesperada |
-| `contentful.sitemap_failed` | O sitemap ficou só com as rotas estáticas |
-| `contentful.rss_failed` | O feed `/rss.xml` ficou sem artigos |
-| `blog.index_metadata_failed` | Os metadados da listagem do blog falharam |
-| `socialdata.fetch_failed` | Erro HTTP da SocialData |
-| `socialdata.user_missing` | Pesquisa vazia e id de perfil em falta |
-| `socialdata.postprocess_failed` | Erro inesperado no feed do X |
-| `revalidate.misconfigured` | Falta `REVALIDATE_SECRET` ou o segredo HMAC num ambiente publicado |
-| `revalidate.unauthorized` | Segredo partilhado errado, ou assinatura HMAC rejeitada (`reason`) |
-| `revalidate.rate_limited` | Limite suave da aplicação atingido |
-| `revalidate.body_too_large` | Corpo acima de 64 KB |
-| `revalidate.body_invalid` | JSON do webhook ilegível ou com forma inesperada |
+| Evento                            | Significado                                                        |
+| --------------------------------- | ------------------------------------------------------------------ |
+| `contentful.fetch_failed`         | O pedido de entradas à CDA falhou (estado / tipo de conteúdo)      |
+| `contentful.response_invalid`     | O JSON das entradas não tem a forma esperada; a página degrada     |
+| `contentful.tags_failed`          | O pedido do catálogo de etiquetas falhou                           |
+| `contentful.tags_invalid`         | O catálogo veio com uma forma inesperada                           |
+| `contentful.sitemap_failed`       | O sitemap ficou só com as rotas estáticas                          |
+| `contentful.rss_failed`           | O feed `/rss.xml` ficou sem artigos                                |
+| `blog.index_metadata_failed`      | Os metadados da listagem do blog falharam                          |
+| `socialdata.fetch_failed`         | Erro HTTP da SocialData                                            |
+| `socialdata.user_missing`         | Pesquisa vazia e id de perfil em falta                             |
+| `socialdata.postprocess_failed`   | Erro inesperado no feed do X                                       |
+| `revalidate.misconfigured`        | Falta `REVALIDATE_SECRET` ou o segredo HMAC num ambiente publicado |
+| `revalidate.unauthorized`         | Segredo partilhado errado, ou assinatura HMAC rejeitada (`reason`) |
+| `revalidate.rate_limited`         | Limite suave da aplicação atingido                                 |
+| `revalidate.body_too_large`       | Corpo acima de 64 KB                                               |
+| `revalidate.body_invalid`         | JSON do webhook ilegível ou com forma inesperada                   |
 | `revalidate.skipped_unknown_type` | Webhook aceite sem invalidar cache (tipo de conteúdo desconhecido) |
-| `revalidate.ok` | Revalidação concluída |
+| `revalidate.ok`                   | Revalidação concluída                                              |
 
 Alertas sugeridos (Vercel Observability / log drain):
 
